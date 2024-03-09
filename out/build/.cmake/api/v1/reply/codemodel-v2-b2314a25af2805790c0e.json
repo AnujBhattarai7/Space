@@ -1,0 +1,168 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "Space/Libs",
+					"childIndexes" : 
+					[
+						2,
+						3
+					],
+					"jsonFile" : "directory-Space.Libs-Debug-3f7e24ff3506a210b7a1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Space/Libs"
+				},
+				{
+					"build" : "Space/Libs/glad",
+					"jsonFile" : "directory-Space.Libs.glad-Debug-1c85e259c90afcfe142d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "Space/Libs/glad",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "Space/Libs/glfw",
+					"childIndexes" : 
+					[
+						4
+					],
+					"jsonFile" : "directory-Space.Libs.glfw-Debug-434cd8cb7b950de1f86d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 1,
+					"source" : "Space/Libs/glfw"
+				},
+				{
+					"build" : "Space/Libs/glfw/src",
+					"jsonFile" : "directory-Space.Libs.glfw.src-Debug-5009bfabe7b84014f704.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 1,
+					"source" : "Space/Libs/glfw/src",
+					"targetIndexes" : 
+					[
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "Space",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						3,
+						4
+					],
+					"name" : "GLFW",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "Space::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-Space-Debug-ee2e253e93f31af686d1.json",
+					"name" : "Space",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "glad::@01ddde87900bd5eb5062",
+					"jsonFile" : "target-glad-Debug-3e1af798d452723133a0.json",
+					"name" : "glad",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "glfw::@19bb6d2f4c56cc307c93",
+					"jsonFile" : "target-glfw-Debug-70a65949aa4565c0b976.json",
+					"name" : "glfw",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "update_mappings::@19bb6d2f4c56cc307c93",
+					"jsonFile" : "target-update_mappings-Debug-4db72d6e9c4eb8731bd3.json",
+					"name" : "update_mappings",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/Codes/C++/Space/out/build",
+		"source" : "D:/Codes/C++/Space"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 5
+	}
+}

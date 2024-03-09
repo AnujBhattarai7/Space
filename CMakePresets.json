@@ -1,0 +1,45 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "Debug",
+            "displayName": "Debug",
+            "description": "Using compilers: C = C:\\msys64\\mingw64\\bin\\gcc.exe, CXX = C:\\msys64\\mingw64\\bin\\g++.exe",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/out/build/",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_CXX_COMPILER": "CC.exe",
+                "CMAKE_C_COMPILER": "cc.exe",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "Win-Debug",
+            "displayName": "Visual Studio Community 2022 Release - amd64_x86",
+            "description": "Using compilers for Visual Studio 17 2022 (x64_x86 architecture)",
+            "generator": "Visual Studio 17 2022",
+            "toolset": "host=x64",
+            "architecture": "win32",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            }
+        },
+        {
+            "name": "Release",
+            "displayName": "Release",
+            "description": "Using compilers: C = C:\\msys64\\mingw64\\bin\\gcc.exe, CXX = C:\\msys64\\mingw64\\bin\\g++.exe",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/out/build/",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/",
+                "CMAKE_CXX_COMPILER": "CC.exe",
+                "CMAKE_C_COMPILER": "cc.exe",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
+}

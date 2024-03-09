@@ -1,0 +1,613 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineSystem.cmake:204 (message)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      The system is: MSYS - 3.4.10.x86_64 - x86_64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: --c++ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: --ec++ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: -c;-I__does_not_exist__ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: --c++ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: --ec++ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+      Compiler: /mingw64/bin/CC.exe 
+      Build flags: 
+      Id flags: -c;-I__does_not_exist__ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:1115 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:1115 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Checking whether the CXX compiler is IAR using "" did not match "IAR .+ Compiler":
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -Aa 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -D__CLASSIC_C__ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -c;-I__does_not_exist__ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -c 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -Aa 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -D__CLASSIC_C__ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: --target=arm-arm-none-eabi;-mcpu=cortex-m3 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+      Compiler: /mingw64/bin/cc.exe 
+      Build flags: 
+      Id flags: -c;-I__does_not_exist__ 
+      
+      The output was:
+      No such file or directory
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:1115 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:1115 (message)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerId.cmake:86 (CMAKE_DETERMINE_COMPILER_ID_VENDOR)"
+      - "/usr/share/cmake/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:7 (project)"
+    message: |
+      Checking whether the C compiler is IAR using "" did not match "IAR .+ Compiler":
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85"
+      binary: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85
+        
+        Run Build Command(s):/usr/bin/cmake.exe -E env VERBOSE=1 /usr/bin/make.exe -f Makefile cmTC_7c754/fast && /usr/bin/make  -f D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85/CMakeFiles/cmTC_7c754.dir/build.make D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85/CMakeFiles/cmTC_7c754.dir/build
+        make[1]: Entering directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85'
+        Building CXX object D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85/CMakeFiles/cmTC_7c754.dir/CMakeCXXCompilerABI.cpp.o
+        /mingw64/bin/CC.exe    -o CMakeFiles/cmTC_7c754.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Linking CXX executable D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85/cmTC_7c754.exe
+        /usr/bin/cmake.exe -E cmake_link_script D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85/CMakeFiles/cmTC_7c754.dir/link.txt --verbose=1
+        /mingw64/bin/CC.exe CMakeFiles/cmTC_7c754.dir/CMakeCXXCompilerABI.cpp.o -o D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85/cmTC_7c754.exe 
+        make[1]: Leaving directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-UgbH85'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/usr/share/cmake/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:7 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25"
+      binary: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25
+        
+        Run Build Command(s):/usr/bin/cmake.exe -E env VERBOSE=1 /usr/bin/make.exe -f Makefile cmTC_bb71c/fast && /usr/bin/make  -f D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25/CMakeFiles/cmTC_bb71c.dir/build.make D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25/CMakeFiles/cmTC_bb71c.dir/build
+        make[1]: Entering directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25'
+        Building C object D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25/CMakeFiles/cmTC_bb71c.dir/CMakeCCompilerABI.c.o
+        /mingw64/bin/cc.exe    -o CMakeFiles/cmTC_bb71c.dir/CMakeCCompilerABI.c.o -c /usr/share/cmake/Modules/CMakeCCompilerABI.c
+        Linking C executable D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25/cmTC_bb71c.exe
+        /usr/bin/cmake.exe -E cmake_link_script D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25/CMakeFiles/cmTC_bb71c.dir/link.txt --verbose=1
+        /mingw64/bin/cc.exe CMakeFiles/cmTC_bb71c.dir/CMakeCCompilerABI.c.o -o D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25/cmTC_bb71c.exe 
+        make[1]: Leaving directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-CjCY25'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/usr/share/cmake/Modules/CheckCSourceCompiles.cmake:76 (cmake_check_source_compiles)"
+      - "/usr/share/cmake/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "/usr/share/cmake/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "Space/Libs/glfw/CMakeLists.txt:47 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu"
+      binary: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "D:/Codes/C++/Space/Space/Libs/glfw/CMake/modules"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu
+        
+        Run Build Command(s):/usr/bin/cmake.exe -E env VERBOSE=1 /usr/bin/make.exe -f Makefile cmTC_db0a8/fast && /usr/bin/make  -f D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/CMakeFiles/cmTC_db0a8.dir/build.make D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/CMakeFiles/cmTC_db0a8.dir/build
+        make[1]: Entering directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu'
+        Building C object D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/CMakeFiles/cmTC_db0a8.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/src.c.o
+        /mingw64/bin/cc.exe -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_db0a8.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/src.c.o -c D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/src.c
+        Linking C executable D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/cmTC_db0a8.exe
+        /usr/bin/cmake.exe -E cmake_link_script D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/CMakeFiles/cmTC_db0a8.dir/link.txt --verbose=1
+        /mingw64/bin/cc.exe "CMakeFiles/cmTC_db0a8.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/src.c.o" -o D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu/cmTC_db0a8.exe 
+        make[1]: Leaving directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-2Zwosu'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CheckIncludeFile.cmake:95 (try_compile)"
+      - "Space/Libs/glfw/src/CMakeLists.txt:56 (check_include_file)"
+    checks:
+      - "Looking for dinput.h"
+    directories:
+      source: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3"
+      binary: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "D:/Codes/C++/Space/Space/Libs/glfw/CMake/modules"
+    buildResult:
+      variable: "DINPUT_H_FOUND"
+      cached: true
+      stdout: |
+        Change Dir: D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3
+        
+        Run Build Command(s):/usr/bin/cmake.exe -E env VERBOSE=1 /usr/bin/make.exe -f Makefile cmTC_cea7c/fast && /usr/bin/make  -f D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CMakeFiles/cmTC_cea7c.dir/build.make D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CMakeFiles/cmTC_cea7c.dir/build
+        make[1]: Entering directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3'
+        Building C object D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CMakeFiles/cmTC_cea7c.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CheckIncludeFile.c.o
+        /mingw64/bin/cc.exe    -o CMakeFiles/cmTC_cea7c.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CheckIncludeFile.c.o -c D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CheckIncludeFile.c
+        Linking C executable D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/cmTC_cea7c.exe
+        /usr/bin/cmake.exe -E cmake_link_script D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CMakeFiles/cmTC_cea7c.dir/link.txt --verbose=1
+        /mingw64/bin/cc.exe "CMakeFiles/cmTC_cea7c.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/CheckIncludeFile.c.o" -o D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3/cmTC_cea7c.exe 
+        make[1]: Leaving directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-Hw73D3'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/share/cmake/Modules/CheckIncludeFile.cmake:95 (try_compile)"
+      - "Space/Libs/glfw/src/CMakeLists.txt:57 (check_include_file)"
+    checks:
+      - "Looking for xinput.h"
+    directories:
+      source: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB"
+      binary: "D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "D:/Codes/C++/Space/Space/Libs/glfw/CMake/modules"
+    buildResult:
+      variable: "XINPUT_H_FOUND"
+      cached: true
+      stdout: |
+        Change Dir: D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB
+        
+        Run Build Command(s):/usr/bin/cmake.exe -E env VERBOSE=1 /usr/bin/make.exe -f Makefile cmTC_c4abb/fast && /usr/bin/make  -f D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CMakeFiles/cmTC_c4abb.dir/build.make D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CMakeFiles/cmTC_c4abb.dir/build
+        make[1]: Entering directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB'
+        Building C object D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CMakeFiles/cmTC_c4abb.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CheckIncludeFile.c.o
+        /mingw64/bin/cc.exe    -o CMakeFiles/cmTC_c4abb.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CheckIncludeFile.c.o -c D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CheckIncludeFile.c
+        Linking C executable D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/cmTC_c4abb.exe
+        /usr/bin/cmake.exe -E cmake_link_script D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CMakeFiles/cmTC_c4abb.dir/link.txt --verbose=1
+        /mingw64/bin/cc.exe "CMakeFiles/cmTC_c4abb.dir/D_/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/CheckIncludeFile.c.o" -o D:/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB/cmTC_c4abb.exe 
+        make[1]: Leaving directory '/d/Codes/C++/Space/out/build/CMakeFiles/CMakeScratch/TryCompile-dLxmqB'
+        
+      exitCode: 0
+...

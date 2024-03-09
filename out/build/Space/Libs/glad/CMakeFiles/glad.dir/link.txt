@@ -1,0 +1,2 @@
+/mingw64/bin/ar.exe qc D:/Codes/C++/Space/out/build/lib/Debug/libglad.a CMakeFiles/glad.dir/D_/Codes/C++/Space/Space/Libs/glad/src/glad.c.o
+/mingw64/bin/ranlib.exe D:/Codes/C++/Space/out/build/lib/Debug/libglad.a
