@@ -182,7 +182,6 @@ namespace Space
 	void WindowsWindow::Update()
 	{
 		glfwPollEvents();
-		glfwSwapBuffers(_Window);
 	}
 
 	void WindowsWindow::SetVSync(bool Value)

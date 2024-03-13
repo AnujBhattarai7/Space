@@ -1,101 +1,127 @@
 #pragma once
 
-#include "Core.h"
 #include "RenderApi.h"
-
-#include "UUID.h"
-#include "VulkanRender.h"
-#include "VulkanDevices.h"
-
-#include "VulkanShader.h"
 
 namespace Space
 {
-    struct ValidationLayersData
+    enum QueuFamilyIndex
     {
-        bool _Enable = false;
-        std::vector<const char *> _Layers;
+        PRESENT,
+        RENDER = 0,
+        GRAPHICS,
+        SIZE
+    };
 
-        std::vector<const char *>::iterator begin() { return _Layers.begin(); }
-        std::vector<const char *>::iterator end() { return _Layers.end(); }
+    const std::vector<const char *> validationLayers = {
+        "VK_LAYER_KHRONOS_validation"};
 
-        int Size() { return _Layers.size(); }
+    const std::vector<const char *> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-        ValidationLayersData()
+#if (SP_DEBUG)
+    const bool enableValidationLayers = true;
+#else
+    const bool enableValidationLayers = false;
+#endif
+
+    struct QueueFamilyIndices
+    {
+        uint32_t _Indicies[QueuFamilyIndex::SIZE];
+
+        QueueFamilyIndices()
         {
-            _Layers.push_back("VK_LAYER_KHRONOS_validation");
+            for (auto &i : _Indicies)
+                i = 900000000000;
+        }
 
-            _Enable = true;
-            if (GetBuildType() == BUILD_TYPE::RELEASE)
-                _Enable = false;
+        bool isComplete()
+        {
+            for (auto &i : _Indicies)
+                if (i == 900000000000)
+                    return false;
+            return true;
         }
     };
 
-    const std::vector<const char *> _DeviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    struct SwapChainSupportDetails
+    {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
 
-    // The Validation Layers Container
-    static ValidationLayersData _ValidationLayers{};
+    static std::vector<VkImageView> _SwapChainImageViews;
+    static std::vector<VkFramebuffer> _SwapChainFramebuffers;
 
-    void _PrintDeviceInfo(const PhysicalDeviceData &Data);
+    struct VulkanApiData
+    {
+        VkInstance _VulkanInstance;
+        VkDebugUtilsMessengerEXT _DebugMessenger;
+        VkSurfaceKHR _Surface;
 
-    // Vulkan Used Functions
-    bool _CheckValidationLayerSupport(ValidationLayersData &_Data);
-    // Debug Msessenger Funcs
-    void _DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator);
-    VkResult _CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger);
+        VkPhysicalDevice _PhysicalDevice = VK_NULL_HANDLE;
+        int _ActivePhysicalDevice = -1;
+        VkDevice _Device;
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-        void *pUserData);
+        VkQueue graphicsQueue;
+        VkQueue presentQueue;
 
-    void _SetupDebuggerMessengerInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
-    const Device& _GetActiveDevice();
+        VkSwapchainKHR _SwapChain;
+        uint32_t _SwapChainImageCount = 0;
+        VkFormat _SwapChainImageFormat;
+        VkExtent2D _SwapChainExtent;
+
+        VkRenderPass _RenderPass;
+        VkPipelineLayout _PipelineLayout;
+        VkPipeline _GraphicsPipeline;
+
+        Vec2 _WindowSize;
+
+        // Commands Buffers
+        VkCommandPool _CommandPool;
+        VkCommandBuffer _CommandBuffers;
+
+        // Render
+        VkSemaphore _Render, _ImageAvialable;
+        VkFence _InFlight;
+    };
+
+    void _PrintPhysicalDeviceInfo(VkPhysicalDevice _Device);
+    bool _IsPhysicalDeviceSuitable(VkPhysicalDevice _Device, VkSurfaceKHR _Surface);
+    void _RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
     class VulkanApi : public RenderApi
     {
     public:
-        VulkanApi()
-        {
-            Init();
-        }
+        VulkanApi() { Init(); }
         ~VulkanApi() { ShutDown(); }
 
-        // For Debugging all of the errors in the Vulkan
-        void SetupDebugger();
-        // Finds and Stores all of the Physical Device we found and from them find a suitable
-        // GPU to use
-        void SetupPhysicalDevice();
-        // The interface we use to draw on the active PhysicalDevice
-        void SetupLogicalDeviceInterface();
+        bool Init() override;
+        bool ShutDown() override;
+        void Update() override;
 
-        void SetupSwapChain();
-        void SetupImageViews();
-
-        virtual bool Init() override;
-        virtual bool ShutDown() override;
+        void Begin(const Vec2 &_VWSize) override;
+        void End() override;
+        void Render() override;
 
     private:
-        // The Init Func for the main VulkanInstance
-        bool _Init();
+        VulkanApiData _Data;
 
-        // All of the Vk structs will be abstracted into Space Structs
+    private:
+        void SetupFrameBuffers();
+        void SetupInstance();
+        void SetupDebugMessenger();
+        void SetupSurface();
+        void SetupActivePhysicalDevice();
+        void SetupLogicalDevice();
+        void SetupSwapChain();
+        void SetupImageViews();
+        void SetupRenderPass();
+        void SetupGraphicPipeline();
+        void SetupCommandPool();
+        void SetupCommandBuffers();
+        void SetupSyncObjects();
 
-        // The Raw Vulkan Instance
-        VkInstance _VulkanInstance;
-        // The Messenger which debugs the errors in the Vulkan Implementation
-        VkDebugUtilsMessengerEXT debugMessenger;
-        // The Logical Device Interface we use to render
-        // Class : LogicalDevice
-        Device _Device;
-
-        // The Active physical Device(GPU) we render to
-        PhysicalDevice *_PhysicalDevice = VK_NULL_HANDLE;
-        int _ActivePhysicalDeviceIndex = -1;
-
-        SurfaceKHR _Surface;
-        RenderChain _RenderChain;
+        VkShaderModule CreateShaderModule(const std::vector<char> &code);
     };
 } // namespace Space

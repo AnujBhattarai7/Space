@@ -34,6 +34,9 @@ namespace Space
 		virtual ~Window() {}
 		Window(const WindowData &_WinData) : _Data(_WinData) {}
 
+		Window(const Window& _Window) = delete;
+		Window &operator=(const Window&) = delete;
+
 		// Getters
 		inline const std::string &GetName() const { return _Data._Name; }
 		inline int GetWidth() const { return _Data._W; }

@@ -28,6 +28,18 @@ namespace Space
             _Api = nullptr;
         }
 
+        void Render() { _Api->Render(); }
+
+        void Begin(const Vec2 &_ViewPort)
+        {
+            _Api->Begin(_ViewPort);
+        }
+
+        void End()
+        {
+            _Api->End();
+        }
+
     private:
         RenderApi *_Api = nullptr;
     };

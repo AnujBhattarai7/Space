@@ -28,6 +28,21 @@ namespace Space
         _Renderer->_Api.ShutDown();
     }
 
+    void Renderer::Begin(const Vec2 &_ViewPortSize)
+    {
+        _Renderer->_Api.Begin(_ViewPortSize);
+    }
+
+    void Renderer::End()
+    {
+        _Renderer->_Api.End();
+    }
+
+    void Renderer::Render()
+    {
+        _Renderer->_Api.Render();
+    }
+
     RenderApiType GetActiveRenderApi()
     {
         return Renderer::GetApiType();
@@ -40,11 +55,6 @@ namespace Space
 {
     Shader *Shader::Create(const char *VertexFilePath, const char *ShaderFilePath)
     {
-        if(Renderer::GetApiType() == RenderApiType::VULKAN_1)
-            return new VulkanShader(VertexFilePath, ShaderFilePath);
-        if(Renderer::GetApiType() == RenderApiType::VULKAN_2)
-            return new VulkanShader(VertexFilePath, ShaderFilePath);
-        
         SP_CORE_ERROR("Shader: Given Api Not Supoorted")
         return nullptr;
     }

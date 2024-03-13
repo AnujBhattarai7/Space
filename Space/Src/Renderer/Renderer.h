@@ -13,6 +13,11 @@ namespace Space
         static void Init(RenderApiType _RenderApiType);
         static void ShutDown();
 
+        static void Begin(const Vec2& _ViewPortSize);
+        static void End();
+
+        static void Render();
+
         static RenderApiType GetApiType() { return _Renderer->_ApiType; }
 
     private:

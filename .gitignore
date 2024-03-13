@@ -2,7 +2,8 @@
 *.d
 
 out/
-D
+D/
+build/
 
 # Compiled Object files
 *.slo

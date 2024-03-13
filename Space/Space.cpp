@@ -7,15 +7,21 @@
 #include <vector>
 #include <optional>
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
 #define SP_DEAFULT_VULKAN_API_VERSION 0
 
 void OnEvent(const Space::Event &_E);
+
+const uint32_t WIDTH = 1200;
+const uint32_t HEIGHT = 900;
 
 namespace Space
 {
     WindowStack *WindowStack::_Stack = new WindowStack();
     Input *Input::_I = new Input();
-    Renderer* Renderer::_Renderer = new Renderer();
+    Renderer *Renderer::_Renderer = new Renderer();
 
     class App
     {
@@ -38,6 +44,11 @@ namespace Space
             while (_Run)
             {
                 _Window.Update();
+             
+                Renderer::Begin({0, 0});
+                Renderer::End();
+
+                Renderer::Render();
             }
         }
 
@@ -45,9 +56,10 @@ namespace Space
         {
             SP_CORE_PRINT("SHUTDOWN: \n")
 
+            // CleanUp();
             Renderer::ShutDown();
             WindowStack::ShutDown();
-            
+
             std::cout << "\n";
         }
 
