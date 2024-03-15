@@ -34,21 +34,30 @@ namespace Space
             WindowStack::AddWindows(new WindowsWindow({"Space", 1200, 900}));
             WindowStack::GetActiveWindow().SetEventFunction(OnEvent);
             // Set Which RenderApi to use
-            Renderer::Init(RenderApiType::VULKAN_1);
+            Renderer::Init(VulkanApiVersion::VULKAN_1_0);
         }
 
         void Update()
         {
             Window &_Window = WindowStack::GetActiveWindow();
 
+            Vec2 Size = {1200, 900};
+
             while (_Run)
             {
                 _Window.Update();
-             
-                Renderer::Begin({0, 0});
-                Renderer::End();
 
-                Renderer::Render();
+                if (_Render)
+                {
+                    Renderer::SetupRender();
+                    Renderer::SetClearColor({0.5f, 1.0f, 1.0f, 1.0f});
+                    Renderer::SetViewPort(Size);
+
+                    if (Input::IsKeyPressed(SP_KEY_R))
+                        Size.x -= 1.0f;
+
+                    Renderer::Render();
+                }
             }
         }
 
@@ -67,10 +76,19 @@ namespace Space
         {
             if (_E.GetType() == EventType::WINDOW_CLOSE)
                 _Run = false;
+
+            if(_E.GetType() == EventType::WINDOW_RESIZE)
+            {
+                _Render = true;
+                auto Size = Vec2(WindowStack::GetRenderWindow().GetWidth(), WindowStack::GetRenderWindow().GetHeight());
+                if(Size.x == 0 || Size.y == 0)
+                    _Render = false;
+            }
         }
 
     private:
         bool _Run = true;
+        bool _Render = true;
     };
 }
 

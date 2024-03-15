@@ -4,7 +4,6 @@
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
-#include "VulkanDevices.h"
 
 #include "Timer.h"
 #include "VulkanApi.h"
@@ -13,79 +12,6 @@
 
 namespace Space
 {
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
-    {
-        for (const auto &availableFormat : availableFormats)
-        {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-            {
-                return availableFormat;
-            }
-        }
-
-        return availableFormats[0];
-    }
-
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
-    {
-        for (const auto &availablePresentMode : availablePresentModes)
-        {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
-                return availablePresentMode;
-        }
-
-        return VK_PRESENT_MODE_FIFO_KHR;
-    }
-
-    SwapChainSupportDetails querySwapChainSupport(VkSurfaceKHR _Surface, VkPhysicalDevice device)
-    {
-        SwapChainSupportDetails details;
-
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _Surface, &details.capabilities);
-
-        uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, _Surface, &formatCount, nullptr);
-
-        if (formatCount != 0)
-        {
-            details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, _Surface, &formatCount, details.formats.data());
-        }
-
-        uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, _Surface, &presentModeCount, nullptr);
-
-        if (presentModeCount != 0)
-        {
-            details.presentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, _Surface, &presentModeCount, details.presentModes.data());
-        }
-
-        return details;
-    }
-
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities)
-    {
-        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-        {
-            return capabilities.currentExtent;
-        }
-        else
-        {
-            int width, height;
-            glfwGetFramebufferSize((GLFWwindow *)WindowStack::GetRenderWindow().GetWindow(), &width, &height);
-
-            VkExtent2D actualExtent = {
-                static_cast<uint32_t>(width),
-                static_cast<uint32_t>(height)};
-
-            actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-            actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-
-            return actualExtent;
-        }
-    }
-
     bool checkDeviceExtensionSupport(VkPhysicalDevice device)
     {
         uint32_t extensionCount;
@@ -104,98 +30,56 @@ namespace Space
         return requiredExtensions.empty();
     }
 
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice _Device, VkSurfaceKHR _Surface)
-    {
-        QueueFamilyIndices indices;
-
-        uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(_Device, &queueFamilyCount, nullptr);
-
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(_Device, &queueFamilyCount, queueFamilies.data());
-
-        int i = 0;
-        for (const auto &queueFamily : queueFamilies)
-        {
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                indices._Indicies[GRAPHICS] = i;
-
-            VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(_Device, i, _Surface, &presentSupport);
-
-            if (presentSupport)
-                indices._Indicies[RENDER] = i;
-
-            if (indices.isComplete())
-                break;
-
-            i++;
-        }
-
-        return indices;
-    }
-
     bool _IsPhysicalDeviceSuitable(VkPhysicalDevice _Device, VkSurfaceKHR _Surface)
     {
-        QueueFamilyIndices indices = findQueueFamilies(_Device, _Surface);
+        QueueFamilyIndices indices = _GetDeviceQueueFamilies(_Device, _Surface);
 
         bool extensionsSupported = checkDeviceExtensionSupport(_Device);
 
         bool swapChainAdequate = false;
         if (extensionsSupported)
         {
-            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(_Surface, _Device);
+            auto swapChainSupport = _GetSwapChainSupportDetails(_Surface, _Device);
             swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    void _RecordCommandBuffer(const VulkanApiData &_Data, uint32_t imageIndex)
+    void _RecordCommandBuffer(const VulkanApiRenderData &_RenderData)
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = 0;                  // Optional
         beginInfo.pInheritanceInfo = nullptr; // Optional
 
-        if (vkBeginCommandBuffer(_Data._CommandBuffers, &beginInfo) != VK_SUCCESS)
+        if (vkBeginCommandBuffer(_RenderData._CommandBuffers, &beginInfo) != VK_SUCCESS)
             SP_CORE_ERROR("failed to begin recording command buffer!");
 
-        VkRenderPassBeginInfo _BeginInfo{};
-        _BeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        _BeginInfo.renderPass = _Data._RenderPass;
-        _BeginInfo.framebuffer = _SwapChainFramebuffers[imageIndex];
+        vkCmdBeginRenderPass(_RenderData._CommandBuffers, &_RenderData._RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-        _BeginInfo.renderArea.extent = _Data._SwapChainExtent;
-        _BeginInfo.renderArea.offset = {0, 0};
-
-        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-        _BeginInfo.clearValueCount = 1;
-        _BeginInfo.pClearValues = &clearColor;
-
-        vkCmdBeginRenderPass(_Data._CommandBuffers, &_BeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(_Data._CommandBuffers, VK_PIPELINE_BIND_POINT_GRAPHICS, _Data._GraphicsPipeline);
+        vkCmdBindPipeline(_RenderData._CommandBuffers, VK_PIPELINE_BIND_POINT_GRAPHICS, *_RenderData._pGraphicsPipeline);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = static_cast<float>(_Data._SwapChainExtent.width);
-        viewport.height = static_cast<float>(_Data._SwapChainExtent.height);
+        viewport.width = static_cast<float>(_RenderData._ViewPortExtent.width);
+        viewport.height = static_cast<float>(_RenderData._ViewPortExtent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(_Data._CommandBuffers, 0, 1, &viewport);
+        vkCmdSetViewport(_RenderData._CommandBuffers, 0, 1, &viewport);
 
         VkRect2D scissor{};
+
         scissor.offset = {0, 0};
-        scissor.extent = _Data._SwapChainExtent;
-        vkCmdSetScissor(_Data._CommandBuffers, 0, 1, &scissor);
+        scissor.extent = _RenderData._ViewPortExtent;
+        vkCmdSetScissor(_RenderData._CommandBuffers, 0, 1, &scissor);
 
-        vkCmdDraw(_Data._CommandBuffers, 3, 1, 0, 0);
+        vkCmdDraw(_RenderData._CommandBuffers, 3, 1, 0, 0);
 
-        vkCmdEndRenderPass(_Data._CommandBuffers);
+        vkCmdEndRenderPass(_RenderData._CommandBuffers);
 
-        if (vkEndCommandBuffer(_Data._CommandBuffers) != VK_SUCCESS)
+        if (vkEndCommandBuffer(_RenderData._CommandBuffers) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to record command buffer!");
     }
 
@@ -208,9 +92,7 @@ namespace Space
         std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
         if (enableValidationLayers)
-        {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
 
         return extensions;
     }
@@ -311,7 +193,7 @@ namespace Space
         createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
         VkShaderModule shaderModule;
-        if (vkCreateShaderModule(_Data._Device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+        if (vkCreateShaderModule(_Device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create shader module!");
         }
@@ -319,21 +201,28 @@ namespace Space
         return shaderModule;
     }
 
-    bool VulkanApi::Init()
+    bool VulkanApi::Init(VulkanApiVersion _V)
     {
         SP_PROFILE_SCOPE("Vulkan: Initialization: ")
-        SetupInstance();
+        SetupInstance(_V);
         SetupDebugMessenger();
+
         SetupSurface();
+
         SetupActivePhysicalDevice();
-        SetupLogicalDevice();
-        SetupSwapChain();
-        SetupImageViews();
+
+        _Device.Init(*_Data._ActivePhysicalDevice);
+
+        _Data._SwapChain.Init(_Data._Surface, _Device);
+
         SetupRenderPass();
+
         SetupGraphicPipeline();
         SetupFrameBuffers();
+
         SetupCommandPool();
         SetupCommandBuffers();
+
         SetupSyncObjects();
 
         return true;
@@ -341,27 +230,25 @@ namespace Space
 
     bool VulkanApi::ShutDown()
     {
+        vkDeviceWaitIdle(_Device);
+
         SP_PROFILE_SCOPE("Vulkan: ShutDown")
 
+        vkDestroySemaphore(_Device, _RenderData._Render, nullptr);
+        vkDestroySemaphore(_Device, _RenderData._ImageAvialable, nullptr);
+        vkDestroyFence(_Device, _RenderData._InFlight, nullptr);
+
+        vkDestroyCommandPool(_Device, _RenderData._CommandPool, nullptr);
+
         for (auto framebuffer : _SwapChainFramebuffers)
-            vkDestroyFramebuffer(_Data._Device, framebuffer, nullptr);
+            vkDestroyFramebuffer(_Device, framebuffer, nullptr);
 
-        vkDestroySemaphore(_Data._Device, _Data._Render, nullptr);
-        vkDestroySemaphore(_Data._Device, _Data._ImageAvialable, nullptr);
-        vkDestroyFence(_Data._Device, _Data._InFlight, nullptr);
+        vkDestroyPipeline(_Device, _Data._GraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(_Device, _Data._PipelineLayout, nullptr);
+        vkDestroyRenderPass(_Device, _Data._RenderPass, nullptr);
 
-        vkDestroyPipeline(_Data._Device, _Data._GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(_Data._Device, _Data._PipelineLayout, nullptr);
-        vkDestroyRenderPass(_Data._Device, _Data._RenderPass, nullptr);
-
-        for (auto imageView : _SwapChainImageViews)
-            vkDestroyImageView(_Data._Device, imageView, nullptr);
-
-        vkFreeCommandBuffers(_Data._Device, _Data._CommandPool, 1, &_Data._CommandBuffers);
-        vkDestroyCommandPool(_Data._Device, _Data._CommandPool, nullptr);
-
-        vkDestroySwapchainKHR(_Data._Device, _Data._SwapChain, nullptr);
-        vkDestroyDevice(_Data._Device, nullptr);
+        _Data._SwapChain.Destroy(_Device);
+        _Device.Destroy();
 
         if (enableValidationLayers)
             DestroyDebugUtilsMessengerEXT(_Data._VulkanInstance, _Data._DebugMessenger, nullptr);
@@ -370,6 +257,9 @@ namespace Space
         vkDestroyInstance(_Data._VulkanInstance, nullptr);
         _Data._VulkanInstance = VK_NULL_HANDLE;
 
+        _Data._ActivePhysicalDevice = nullptr;
+        _Data._ActivePhysicalDeviceIndex = -1;
+
         return _Data._VulkanInstance == VK_NULL_HANDLE;
     }
 
@@ -377,45 +267,62 @@ namespace Space
     {
     }
 
-    void VulkanApi::Begin(const Vec2 &_VWSize)
+    void VulkanApi::SetupRender()
     {
-    }
-
-    void VulkanApi::End()
-    {
+        _RenderData._RenderPassBeginInfo = {};
+        _RenderData._RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     }
 
     void VulkanApi::Render()
     {
         // Wait for PRevious frame to be finished
-        vkWaitForFences(_Data._Device, 1, &_Data._InFlight, VK_TRUE, UINT64_MAX);
-        vkResetFences(_Data._Device, 1, &_Data._InFlight);
+        vkWaitForFences(_Device, 1, &_RenderData._InFlight, VK_TRUE, UINT64_MAX);
+        vkResetFences(_Device, 1, &_RenderData._InFlight);
 
         uint32_t _ImageIndex = 0;
-        vkAcquireNextImageKHR(_Data._Device, _Data._SwapChain, UINT64_MAX, _Data._ImageAvialable, VK_NULL_HANDLE, &_ImageIndex);
+        vkAcquireNextImageKHR(_Device, _Data._SwapChain, UINT64_MAX, _RenderData._ImageAvialable, VK_NULL_HANDLE, &_ImageIndex);
 
-        vkResetCommandBuffer(_Data._CommandBuffers, 0);
+        _RenderData._CuurentImageIndex = _ImageIndex;
+        _RenderData._RenderPassBeginInfo.framebuffer = _SwapChainFramebuffers[_ImageIndex];
+        _RenderData._RenderPassBeginInfo.renderPass = *_RenderData._pRenderPass;
 
-        _RecordCommandBuffer(_Data, _ImageIndex);
+        _RenderData._ViewPortExtent.width = _RenderData._ViewPortSize.x;
+        _RenderData._ViewPortExtent.height = _RenderData._ViewPortSize.y;
 
-        VkSemaphore waitSemaphores[] = {_Data._ImageAvialable};
+        _RenderData._RenderPassBeginInfo.renderArea.extent = _RenderData._ViewPortExtent;
+        _RenderData._RenderPassBeginInfo.renderArea.offset = {0, 0};
+
+        VkClearValue clearColor;
+        clearColor.color.float32[0] = _RenderData._ClearColor.x;
+        clearColor.color.float32[1] = _RenderData._ClearColor.y;
+        clearColor.color.float32[2] = _RenderData._ClearColor.z;
+        clearColor.color.float32[3] = _RenderData._ClearColor.w;
+
+        _RenderData._RenderPassBeginInfo.clearValueCount = 1;
+        _RenderData._RenderPassBeginInfo.pClearValues = &clearColor;
+
+        vkResetCommandBuffer(_RenderData._CommandBuffers, 0);
+
+        _RecordCommandBuffer(_RenderData);
+
+        VkSemaphore waitSemaphores[] = {_RenderData._ImageAvialable};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
         VkSubmitInfo _SubmitInfo{};
         _SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
         _SubmitInfo.commandBufferCount = 1;
-        _SubmitInfo.pCommandBuffers = &_Data._CommandBuffers;
+        _SubmitInfo.pCommandBuffers = &_RenderData._CommandBuffers;
 
         _SubmitInfo.pWaitDstStageMask = waitStages;
         _SubmitInfo.pWaitSemaphores = waitSemaphores;
         _SubmitInfo.waitSemaphoreCount = 1;
 
-        VkSemaphore signalSemaphores[] = {_Data._Render};
+        VkSemaphore signalSemaphores[] = {_RenderData._Render};
         _SubmitInfo.signalSemaphoreCount = 1;
         _SubmitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(_Data.graphicsQueue, 1, &_SubmitInfo, _Data._InFlight) != VK_SUCCESS)
+        if (vkQueueSubmit(_Device.AccessQueues(GRAPHICS), 1, &_SubmitInfo, _RenderData._InFlight) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to submit draw command buffer!");
 
         VkPresentInfoKHR _PresentInfo{};
@@ -431,34 +338,39 @@ namespace Space
         _PresentInfo.pImageIndices = &_ImageIndex;
         _PresentInfo.pResults = nullptr; // Optional
 
-        vkQueuePresentKHR(_Data.presentQueue, &_PresentInfo);
+        vkQueuePresentKHR(_Device.AccessQueues(RENDER), &_PresentInfo);
+    }
+
+    void VulkanApi::SetViewPort(const Vec2 &Size)
+    {
+        _RenderData._ViewPortSize = Size;
     }
 
     void VulkanApi::SetupFrameBuffers()
     {
-        _SwapChainFramebuffers.resize(_Data._SwapChainImageCount);
+        _SwapChainFramebuffers.resize(_Data._SwapChain.GetImageCount());
 
-        for (size_t i = 0; i < _Data._SwapChainImageCount; i++)
+        for (size_t i = 0; i < _Data._SwapChain.GetImageCount(); i++)
         {
             VkImageView attachments[] = {
-                _SwapChainImageViews[i]};
+                _Data._SwapChain.GetImageViews()[i]};
 
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = _Data._RenderPass;
             framebufferInfo.attachmentCount = 1;
             framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = _Data._SwapChainExtent.width;
-            framebufferInfo.height = _Data._SwapChainExtent.height;
+            framebufferInfo.width = _Data._SwapChain.GetExtent().width;
+            framebufferInfo.height = _Data._SwapChain.GetExtent().height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(_Data._Device, &framebufferInfo, nullptr, &_SwapChainFramebuffers[i]) != VK_SUCCESS)
+            if (vkCreateFramebuffer(_Device, &framebufferInfo, nullptr, &_SwapChainFramebuffers[i]) != VK_SUCCESS)
                 SP_CORE_ERROR("Vulkan: Failed to create Framebuffer!");
         }
         SP_CORE_PRINT("Vulkan: FrameBuffers Setup!!")
     }
 
-    void VulkanApi::SetupInstance()
+    void VulkanApi::SetupInstance(VulkanApiVersion _V)
     {
         if (enableValidationLayers && !checkValidationLayerSupport())
             SP_CORE_ERROR("Vulkan: validation layers requested, but not available!");
@@ -480,6 +392,25 @@ namespace Space
         appInfo.pEngineName = "No Engine";
         appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
+
+        if (_V == VULKAN_1_1)
+        {
+            appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 1, 0);
+            appInfo.apiVersion = VK_API_VERSION_1_1;
+            appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 1, 0);
+        }
+        else if (_V == VULKAN_1_2)
+        {
+            appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 2, 0);
+            appInfo.apiVersion = VK_API_VERSION_1_2;
+            appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 2, 0);
+        }
+        else if (_V == VULKAN_1_3)
+        {
+            appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
+            appInfo.apiVersion = VK_API_VERSION_1_3;
+            appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 3, 0);
+        }
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -541,157 +472,33 @@ namespace Space
         VkPhysicalDevice _Devices[DeviceCount];
         vkEnumeratePhysicalDevices(_Data._VulkanInstance, &DeviceCount, _Devices);
 
-        for (auto &i : _Devices)
-            _PrintPhysicalDeviceInfo(i);
+        _PhysicalDevices.reserve(DeviceCount);
 
         for (auto &i : _Devices)
+            _PhysicalDevices.emplace_back(i);
+
+        for (size_t i = 0; i < DeviceCount; i++)
         {
-            if (_IsPhysicalDeviceSuitable(i, _Data._Surface))
+            if (_IsPhysicalDeviceSuitable(_Devices[i], _Data._Surface))
             {
-                _Data._PhysicalDevice = i;
+                _Data._ActivePhysicalDevice = &_PhysicalDevices[i];
+                _Data._ActivePhysicalDeviceIndex = i;
                 break;
             }
         }
 
-        if (_Data._PhysicalDevice == VK_NULL_HANDLE)
+        if (_Data._ActivePhysicalDevice == nullptr)
             SP_CORE_PRINT("No Proper Vulkan Supported Physical Device FounD!!")
 
         SP_CORE_PRINT("Active Physical Device: ")
-        _PrintPhysicalDeviceInfo(_Data._PhysicalDevice);
-    }
-
-    void VulkanApi::SetupLogicalDevice()
-    {
-        QueueFamilyIndices indices = findQueueFamilies(_Data._PhysicalDevice, _Data._Surface);
-
-        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t> uniqueQueueFamilies = {indices._Indicies[GRAPHICS], indices._Indicies[RENDER]};
-
-        float queuePriority = 1.0f;
-        for (uint32_t queueFamily : uniqueQueueFamilies)
-        {
-            VkDeviceQueueCreateInfo queueCreateInfo{};
-            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueCreateInfo.queueFamilyIndex = queueFamily;
-            queueCreateInfo.queueCount = 1;
-            queueCreateInfo.pQueuePriorities = &queuePriority;
-            queueCreateInfos.push_back(queueCreateInfo);
-        }
-
-        VkPhysicalDeviceFeatures deviceFeatures{};
-
-        VkDeviceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();
-
-        createInfo.pEnabledFeatures = &deviceFeatures;
-
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
-        createInfo.enabledLayerCount = 0;
-
-        if (enableValidationLayers)
-        {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
-        }
-
-        if (vkCreateDevice(_Data._PhysicalDevice, &createInfo, nullptr, &_Data._Device) != VK_SUCCESS)
-            SP_CORE_ERROR("Vulkan: Failed to create logical device!");
-
-        vkGetDeviceQueue(_Data._Device, indices._Indicies[GRAPHICS], 0, &_Data.graphicsQueue);
-        vkGetDeviceQueue(_Data._Device, indices._Indicies[RENDER], 0, &_Data.presentQueue);
-
-        SP_CORE_PRINT("Vulkan: Logical Device Created!!")
-    }
-
-    void VulkanApi::SetupSwapChain()
-    {
-        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(_Data._Surface, _Data._PhysicalDevice);
-
-        VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-        VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
-
-        _Data._SwapChainImageCount = swapChainSupport.capabilities.minImageCount + 1;
-        if (swapChainSupport.capabilities.maxImageCount > 0 && _Data._SwapChainImageCount > swapChainSupport.capabilities.maxImageCount)
-            _Data._SwapChainImageCount = swapChainSupport.capabilities.maxImageCount;
-
-        VkSwapchainCreateInfoKHR createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = _Data._Surface;
-
-        createInfo.minImageCount = _Data._SwapChainImageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent = extent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-        QueueFamilyIndices indices = findQueueFamilies(_Data._PhysicalDevice, _Data._Surface);
-        uint32_t queueFamilyIndices[] = {indices._Indicies[GRAPHICS], indices._Indicies[RENDER]};
-        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        // If Render and Graphic queues presentin diff queue families then allow transfer of data
-        if (indices._Indicies[RENDER] != indices._Indicies[GRAPHICS])
-        {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        }
-
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE;
-
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-        if (vkCreateSwapchainKHR(_Data._Device, &createInfo, nullptr, &_Data._SwapChain) != VK_SUCCESS)
-            SP_CORE_ERROR("Vulkan: Failed to create swap chain!");
-
-        SP_CORE_PRINT("Vulkan: Swap Chain Target Created!!")
-
-        _Data._SwapChainImageFormat = surfaceFormat.format;
-        _Data._SwapChainExtent = extent;
-    }
-
-    void VulkanApi::SetupImageViews()
-    {
-        VkImage _Images[_Data._SwapChainImageCount];
-        vkGetSwapchainImagesKHR(_Data._Device, _Data._SwapChain, &_Data._SwapChainImageCount, _Images);
-        _SwapChainImageViews.resize(_Data._SwapChainImageCount);
-
-        for (size_t i = 0; i < _Data._SwapChainImageCount; i++)
-        {
-            VkImageViewCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = _Images[i];
-            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = _Data._SwapChainImageFormat;
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel = 0;
-            createInfo.subresourceRange.levelCount = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = 1;
-
-            if (vkCreateImageView(_Data._Device, &createInfo, nullptr, &_SwapChainImageViews[i]) != VK_SUCCESS)
-                SP_CORE_ERROR("Vulkan: Failed to create image views!");
-        }
-
-        SP_CORE_PRINT("Vulkan: Swap Chain Image Views Created!!\n")
+        _PrintPhysicalDeviceInfo(_Data._ActivePhysicalDevice->GetData());
+        _Data._ActivePhysicalDevice->SetQueueFamilyInidices(_Data._Surface);
     }
 
     void VulkanApi::SetupRenderPass()
     {
         VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = _Data._SwapChainImageFormat;
+        colorAttachment.format = _Data._SwapChain.GetFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -726,9 +533,11 @@ namespace Space
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(_Data._Device, &renderPassInfo, nullptr, &_Data._RenderPass) != VK_SUCCESS)
+        if (vkCreateRenderPass(_Device, &renderPassInfo, nullptr, &_Data._RenderPass) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to create render pass!\n");
         SP_CORE_PRINT("Vulkan: Render Pass Created!!\n")
+
+        _RenderData._pRenderPass = &_Data._RenderPass;
     }
 
     void VulkanApi::SetupGraphicPipeline()
@@ -815,7 +624,7 @@ namespace Space
         pipelineLayoutInfo.setLayoutCount = 0;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-        if (vkCreatePipelineLayout(_Data._Device, &pipelineLayoutInfo, nullptr, &_Data._PipelineLayout) != VK_SUCCESS)
+        if (vkCreatePipelineLayout(_Device, &pipelineLayoutInfo, nullptr, &_Data._PipelineLayout) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to create pipeline layout!");
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -834,23 +643,25 @@ namespace Space
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(_Data._Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_Data._GraphicsPipeline) != VK_SUCCESS)
+        if (vkCreateGraphicsPipelines(_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &_Data._GraphicsPipeline) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to create Graphics Pipeline!");
 
-        vkDestroyShaderModule(_Data._Device, fragShaderModule, nullptr);
-        vkDestroyShaderModule(_Data._Device, vertShaderModule, nullptr);
+        _RenderData._pGraphicsPipeline = &_Data._GraphicsPipeline;
+
+        vkDestroyShaderModule(_Device, fragShaderModule, nullptr);
+        vkDestroyShaderModule(_Device, vertShaderModule, nullptr);
     }
 
     void VulkanApi::SetupCommandPool()
     {
-        auto _Families = findQueueFamilies(_Data._PhysicalDevice, _Data._Surface);
+        auto _Families = _GetDeviceQueueFamilies(*_Data._ActivePhysicalDevice, _Data._Surface);
 
         VkCommandPoolCreateInfo _CreateInfo{};
         _CreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         _CreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         _CreateInfo.queueFamilyIndex = _Families._Indicies[GRAPHICS];
 
-        if (vkCreateCommandPool(_Data._Device, &_CreateInfo, nullptr, &_Data._CommandPool) != VK_SUCCESS)
+        if (vkCreateCommandPool(_Device, &_CreateInfo, nullptr, &_RenderData._CommandPool) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Command Pool Setup Failed!!")
         SP_CORE_PRINT("Vulkan: Command Pool Created!!\n")
     }
@@ -859,11 +670,11 @@ namespace Space
     {
         VkCommandBufferAllocateInfo _Info{};
         _Info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        _Info.commandPool = _Data._CommandPool;
+        _Info.commandPool = _RenderData._CommandPool;
         _Info.commandBufferCount = 1;
         _Info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-        if (vkAllocateCommandBuffers(_Data._Device, &_Info, &_Data._CommandBuffers) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(_Device, &_Info, &_RenderData._CommandBuffers) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Command Buffer Setup Failed!!")
         SP_CORE_PRINT("Vulkan: Command Buffer Created!!\n")
     }
@@ -877,29 +688,9 @@ namespace Space
         _FenInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         _FenInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        if (vkCreateSemaphore(_Data._Device, &_SemInfo, nullptr, &_Data._ImageAvialable) != VK_SUCCESS ||
-            vkCreateSemaphore(_Data._Device, &_SemInfo, nullptr, &_Data._Render) != VK_SUCCESS ||
-            vkCreateFence(_Data._Device, &_FenInfo, nullptr, &_Data._InFlight) != VK_SUCCESS)
+        if (vkCreateSemaphore(_Device, &_SemInfo, nullptr, &_RenderData._ImageAvialable) != VK_SUCCESS ||
+            vkCreateSemaphore(_Device, &_SemInfo, nullptr, &_RenderData._Render) != VK_SUCCESS ||
+            vkCreateFence(_Device, &_FenInfo, nullptr, &_RenderData._InFlight) != VK_SUCCESS)
             SP_CORE_ERROR("failed to create semaphores!");
     }
-
-    void _PrintPhysicalDeviceInfo(VkPhysicalDevice _Device)
-    {
-        VkPhysicalDeviceProperties _Properties;
-        vkGetPhysicalDeviceProperties(_Device, &_Properties);
-
-        SP_CORE_PRINT("GPU Info: " << _Properties.deviceName)
-        SP_CORE_PRINT("Api Version: " << _Properties.apiVersion)
-        SP_CORE_PRINT("Driver Version: " << _Properties.driverVersion)
-        SP_CORE_PRINT("Device ID: " << _Properties.deviceID)
-        SP_CORE_PRINT("Vendor ID: " << _Properties.vendorID)
-
-        if (_Properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
-            SP_CORE_PRINT("Device Type: Integrated\n")
-        if (_Properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-            SP_CORE_PRINT("Device Type: Discrete\n")
-        if (_Properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU)
-            SP_CORE_PRINT("Device Type: Virtual\n")
-    }
-
 }

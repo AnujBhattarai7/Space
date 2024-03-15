@@ -1,29 +1,35 @@
 #pragma once
 
-#include "RenderApiOverView.h"
+#include "Maths.h"
 #include "Shaders.h"
+#include "VulkanHeader.h"
 
 namespace Space
 {
+    class VulkanApi;
+
     class Renderer
     {
     public:
         static Renderer &Get() { return *_Renderer; }
 
-        static void Init(RenderApiType _RenderApiType);
+        static void Init(VulkanApiVersion _V);
         static void ShutDown();
 
-        static void Begin(const Vec2& _ViewPortSize);
-        static void End();
+        static void SetupRender();
 
         static void Render();
 
-        static RenderApiType GetApiType() { return _Renderer->_ApiType; }
+        static RenderApiType GetApiType() { return RenderApiType::VULKAN_1; }
+
+        static void SetViewPort(const Vec2 &Size);
+        static void SetClearColor(const Vec4 &Color);
 
     private:
+        Renderer() {}
+
         static Renderer *_Renderer;
 
-        RenderApiOverView _Api;
-        RenderApiType _ApiType;
+        VulkanApi* _VulkanApi;
     };
 } // namespace Space

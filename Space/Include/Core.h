@@ -11,8 +11,6 @@ namespace Space
     {
         VULKAN_1,
         VULKAN_2,
-        OPENGL_2,
-        OPENGL_3
     };
 
     enum class BUILD_TYPE

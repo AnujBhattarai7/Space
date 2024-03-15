@@ -7,40 +7,41 @@
 
 namespace Space
 {
-    void Renderer::Init(RenderApiType _RenderApiType)
+    void Renderer::Init(VulkanApiVersion _V)
     {
         SP_CORE_PRINT("Renderer Initialization: ")
 
-        _Renderer->_ApiType = _RenderApiType;
-
-        if (_RenderApiType == RenderApiType::VULKAN_1)
-            _Renderer->_Api.Init(new VulkanApi());
-        if (_RenderApiType == RenderApiType::VULKAN_2)
-            _Renderer->_Api.Init(new VulkanApi());
-        if (_RenderApiType == RenderApiType::OPENGL_3)
-            // TODO:
-            _Renderer->_Api.Init(new VulkanApi());
+        _Renderer->_VulkanApi = new VulkanApi(_V);
     }
 
     void Renderer::ShutDown()
     {
         SP_CORE_PRINT("Renderer ShutDown: ")
-        _Renderer->_Api.ShutDown();
+        _Renderer->_VulkanApi->ShutDown();
     }
 
-    void Renderer::Begin(const Vec2 &_ViewPortSize)
+    void Renderer::SetupRender()
     {
-        _Renderer->_Api.Begin(_ViewPortSize);
-    }
-
-    void Renderer::End()
-    {
-        _Renderer->_Api.End();
+        _Renderer->_VulkanApi->SetupRender();
+        _Renderer->_VulkanApi->SetViewPort({1200, 900});
+        _Renderer->_VulkanApi->SetClearColor({0.2f, 0.2f, 0.2f, 1.0f});
     }
 
     void Renderer::Render()
     {
-        _Renderer->_Api.Render();
+        _Renderer->_VulkanApi->Render();
+    }
+
+    void Renderer::SetViewPort(const Vec2 &Size)
+    {
+        if (Size.x == 0 || Size.y == 0)
+            SP_CORE_ERROR("Renderer: ViewPort Size Given Not Valid!")
+        _Renderer->_VulkanApi->SetViewPort(Size);
+    }
+
+    void Renderer::SetClearColor(const Vec4 &Color)
+    {
+        _Renderer->_VulkanApi->SetClearColor(Color);
     }
 
     RenderApiType GetActiveRenderApi()

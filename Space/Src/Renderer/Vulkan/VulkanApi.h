@@ -1,57 +1,15 @@
 #pragma once
 
-#include "RenderApi.h"
+#include "VulkanDevices.h"
+#include "VulkanRenderChain.h"
+#include "Maths.h"
 
 namespace Space
 {
-    enum QueuFamilyIndex
-    {
-        PRESENT,
-        RENDER = 0,
-        GRAPHICS,
-        SIZE
-    };
-
-    const std::vector<const char *> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"};
-
-    const std::vector<const char *> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-#if (SP_DEBUG)
-    const bool enableValidationLayers = true;
-#else
-    const bool enableValidationLayers = false;
-#endif
-
-    struct QueueFamilyIndices
-    {
-        uint32_t _Indicies[QueuFamilyIndex::SIZE];
-
-        QueueFamilyIndices()
-        {
-            for (auto &i : _Indicies)
-                i = 900000000000;
-        }
-
-        bool isComplete()
-        {
-            for (auto &i : _Indicies)
-                if (i == 900000000000)
-                    return false;
-            return true;
-        }
-    };
-
-    struct SwapChainSupportDetails
-    {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
-
-    static std::vector<VkImageView> _SwapChainImageViews;
     static std::vector<VkFramebuffer> _SwapChainFramebuffers;
+    static std::vector<PhysicalDevice> _PhysicalDevices;
+
+    static VulkanDevice _Device;
 
     struct VulkanApiData
     {
@@ -59,24 +17,24 @@ namespace Space
         VkDebugUtilsMessengerEXT _DebugMessenger;
         VkSurfaceKHR _Surface;
 
-        VkPhysicalDevice _PhysicalDevice = VK_NULL_HANDLE;
-        int _ActivePhysicalDevice = -1;
-        VkDevice _Device;
-
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
-
-        VkSwapchainKHR _SwapChain;
-        uint32_t _SwapChainImageCount = 0;
-        VkFormat _SwapChainImageFormat;
-        VkExtent2D _SwapChainExtent;
-
         VkRenderPass _RenderPass;
         VkPipelineLayout _PipelineLayout;
         VkPipeline _GraphicsPipeline;
 
         Vec2 _WindowSize;
 
+        PhysicalDevice *_ActivePhysicalDevice = nullptr;
+        int _ActivePhysicalDeviceIndex = -1;
+
+        VulkanRenderChain _SwapChain;
+    };
+
+    struct VulkanApiRenderData
+    {
+        VkRenderPassBeginInfo _RenderPassBeginInfo{};
+        Vec2 _ViewPortSize;
+        VkExtent2D _ViewPortExtent;
+        Vec4 _ClearColor;
         // Commands Buffers
         VkCommandPool _CommandPool;
         VkCommandBuffer _CommandBuffers;
@@ -84,36 +42,40 @@ namespace Space
         // Render
         VkSemaphore _Render, _ImageAvialable;
         VkFence _InFlight;
+        VkRenderPass *_pRenderPass;
+        VkPipeline *_pGraphicsPipeline;
+        int _CuurentImageIndex = -1;
     };
 
-    void _PrintPhysicalDeviceInfo(VkPhysicalDevice _Device);
     bool _IsPhysicalDeviceSuitable(VkPhysicalDevice _Device, VkSurfaceKHR _Surface);
     void _RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
-    class VulkanApi : public RenderApi
+    class VulkanApi 
     {
     public:
-        VulkanApi() { Init(); }
+        VulkanApi(VulkanApiVersion _V) { Init(_V); }
         ~VulkanApi() { ShutDown(); }
 
-        bool Init() override;
-        bool ShutDown() override;
-        void Update() override;
+        bool Init(VulkanApiVersion _V);
+        bool ShutDown();
+        void Update();
 
-        void Begin(const Vec2 &_VWSize) override;
-        void End() override;
-        void Render() override;
+        void SetupRender();
+        void Render();
+
+        virtual void SetViewPort(const Vec2 &Size);
+        virtual void SetClearColor(const Vec4 &ClearColor) { _RenderData._ClearColor = ClearColor; }
 
     private:
         VulkanApiData _Data;
+        VulkanApiRenderData _RenderData;
 
     private:
         void SetupFrameBuffers();
-        void SetupInstance();
+        void SetupInstance(VulkanApiVersion _V);
         void SetupDebugMessenger();
         void SetupSurface();
         void SetupActivePhysicalDevice();
-        void SetupLogicalDevice();
         void SetupSwapChain();
         void SetupImageViews();
         void SetupRenderPass();
