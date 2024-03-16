@@ -2,14 +2,13 @@
 
 #include "VulkanDevices.h"
 #include "VulkanRenderChain.h"
+#include "VulkanRenderPass.h"
+
 #include "Maths.h"
 
 namespace Space
 {
-    static std::vector<VkFramebuffer> _SwapChainFramebuffers;
-    static std::vector<PhysicalDevice> _PhysicalDevices;
-
-    static VulkanDevice _Device;
+    class VertexBuffer;
 
     struct VulkanApiData
     {
@@ -17,7 +16,9 @@ namespace Space
         VkDebugUtilsMessengerEXT _DebugMessenger;
         VkSurfaceKHR _Surface;
 
-        VkRenderPass _RenderPass;
+        // VkRenderPass _RenderPass;
+
+        VulkanRenderPass _RenderPass;
         VkPipelineLayout _PipelineLayout;
         VkPipeline _GraphicsPipeline;
 
@@ -37,20 +38,29 @@ namespace Space
         Vec4 _ClearColor;
         // Commands Buffers
         VkCommandPool _CommandPool;
-        VkCommandBuffer _CommandBuffers;
+        std::vector<VkCommandBuffer> _CommandBuffers;
 
         // Render
-        VkSemaphore _Render, _ImageAvialable;
-        VkFence _InFlight;
-        VkRenderPass *_pRenderPass;
+        std::vector<VkSemaphore> _Render, _ImageAvialable;
+        std::vector<VkFence> _InFlight;
+        VulkanRenderPass *_pRenderPass;
         VkPipeline *_pGraphicsPipeline;
         int _CuurentImageIndex = -1;
+
+        // Stores the Number of Frames to Render at a time
+        int _FramesNumber = 2;
+
+        bool _FrameBufferRecreate = false;
+        const VertexBuffer* _pCurrentVBuffer;
+        // VkDeviceMemory _VBO_Data;
     };
 
     bool _IsPhysicalDeviceSuitable(VkPhysicalDevice _Device, VkSurfaceKHR _Surface);
     void _RecordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
-    class VulkanApi 
+    const VulkanDevice& GetActiveDevice();
+
+    class VulkanApi
     {
     public:
         VulkanApi(VulkanApiVersion _V) { Init(_V); }
@@ -61,24 +71,25 @@ namespace Space
         void Update();
 
         void SetupRender();
-        void Render();
+        void Render(const VertexBuffer* _VB);
+        void OnWindowResized() { _RenderData._FrameBufferRecreate = true; }
 
-        virtual void SetViewPort(const Vec2 &Size);
-        virtual void SetClearColor(const Vec4 &ClearColor) { _RenderData._ClearColor = ClearColor; }
+        void SetViewPort(const Vec2 &Size);
+        void SetClearColor(const Vec4 &ClearColor);
+        void SetFramesToRender(int n);
+        void Stop();
 
     private:
         VulkanApiData _Data;
         VulkanApiRenderData _RenderData;
 
     private:
-        void SetupFrameBuffers();
+        uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
         void SetupInstance(VulkanApiVersion _V);
         void SetupDebugMessenger();
         void SetupSurface();
         void SetupActivePhysicalDevice();
-        void SetupSwapChain();
-        void SetupImageViews();
-        void SetupRenderPass();
         void SetupGraphicPipeline();
         void SetupCommandPool();
         void SetupCommandBuffers();

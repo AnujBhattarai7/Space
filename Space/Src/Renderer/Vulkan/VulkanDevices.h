@@ -7,7 +7,8 @@
 namespace Space
 {
     const std::vector<const char *> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME};
 
     enum PhysicalDeviceType
     {
@@ -71,8 +72,8 @@ namespace Space
 
         operator VkDevice() const { return _Device; }
 
-        VkQueue AccessQueues(int i) { return _Queues[i]; }
-        PhysicalDevice &GetPhysicalDevice() { return *_PDevice; }
+        VkQueue AccessQueues(int i) const { return _Queues[i]; }
+        const PhysicalDevice &GetPhysicalDevice() const { return *_PDevice; }
 
     private:
         PhysicalDevice *_PDevice = nullptr;

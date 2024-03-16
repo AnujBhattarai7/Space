@@ -1,16 +1,12 @@
+#define VK_USE_PLATFORM_WIN32_KHR
+#include <vulkan/vulkan.h>
+
 #include "Space.h"
-
-#include <vulkan/vulkan_core.h>
-
-#include <cstring>
-
-#include <vector>
-#include <optional>
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#define SP_DEAFULT_VULKAN_API_VERSION 0
+#define SP_DEAFULT_VULKAN_API_VERSION 1
 
 void OnEvent(const Space::Event &_E);
 
@@ -35,16 +31,33 @@ namespace Space
             WindowStack::GetActiveWindow().SetEventFunction(OnEvent);
             // Set Which RenderApi to use
             Renderer::Init(VulkanApiVersion::VULKAN_1_0);
+
+            const std::vector<Vertex> vertices = {
+                {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}},
+                {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+                {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+                {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}},
+                {{-0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+                {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+            };
+
+            _VB.Init((Vertex *)vertices.data(), vertices.size());
         }
 
         void Update()
         {
             Window &_Window = WindowStack::GetActiveWindow();
 
+            double previousTime = glfwGetTime();
+
             Vec2 Size = {1200, 900};
 
             while (_Run)
             {
+                float _Dur;
+                double currentTime = glfwGetTime();
+                _FPS++;
+
                 _Window.Update();
 
                 if (_Render)
@@ -52,19 +65,31 @@ namespace Space
                     Renderer::SetupRender();
                     Renderer::SetClearColor({0.5f, 1.0f, 1.0f, 1.0f});
                     Renderer::SetViewPort(Size);
+                    
+                    Renderer::Submit(_VB);
 
                     if (Input::IsKeyPressed(SP_KEY_R))
                         Size.x -= 1.0f;
 
                     Renderer::Render();
+
+                    // Every one Second Print the FPS
+                    if (currentTime - previousTime >= 1.0f)
+                    {
+                        SP_CORE_PRINT("FPS: " << _FPS)
+                        previousTime = currentTime;
+                        _FPS = 0;
+                    }
                 }
             }
+            Renderer::Stop();
         }
 
         void ShutDown()
         {
             SP_CORE_PRINT("SHUTDOWN: \n")
 
+            _VB.Destroy();
             // CleanUp();
             Renderer::ShutDown();
             WindowStack::ShutDown();
@@ -77,11 +102,12 @@ namespace Space
             if (_E.GetType() == EventType::WINDOW_CLOSE)
                 _Run = false;
 
-            if(_E.GetType() == EventType::WINDOW_RESIZE)
+            if (_E.GetType() == EventType::WINDOW_RESIZE)
             {
                 _Render = true;
                 auto Size = Vec2(WindowStack::GetRenderWindow().GetWidth(), WindowStack::GetRenderWindow().GetHeight());
-                if(Size.x == 0 || Size.y == 0)
+                Renderer::OnWindowResized();
+                if (Size.x == 0 || Size.y == 0)
                     _Render = false;
             }
         }
@@ -89,6 +115,9 @@ namespace Space
     private:
         bool _Run = true;
         bool _Render = true;
+        int _FPS = 0;
+
+        VertexBuffer _VB;
     };
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "UUID.h"
+
 namespace Space
 {
     struct RenderChainSupportDetails
@@ -13,22 +15,30 @@ namespace Space
     {
     public:
         VulkanRenderChain() {}
-        VulkanRenderChain(VkSurfaceKHR _Surface, VulkanDevice &_Device) { Init(_Surface, _Device); }
+        VulkanRenderChain(VkSurfaceKHR _Surface, VulkanDevice &_Device)
+        {
+            Init(_Surface, _Device);
+        }
+
         ~VulkanRenderChain();
 
         void Init(VkSurfaceKHR _Surface, VulkanDevice &_Device);
         void Destroy(VulkanDevice &_Device);
 
         void _InitImageViews(VulkanDevice &_Device);
+        void _InitFrameBuffers(VulkanDevice &_Device, VkRenderPass _RenderPass);
 
         operator VkSwapchainKHR() const { return _SwapChain; }
 
         const std::vector<VkImageView> &GetImageViews() const;
+        const std::vector<VkFramebuffer> &GetFrameBuffers() const;
         VkSwapchainKHR GetHandle() const { return _SwapChain; }
 
         VkFormat GetFormat() const { return _Format; }
         VkExtent2D GetExtent() const { return _Extent; }
         uint32_t GetImageCount() const { return _ImageCount; }
+
+        void Recreate(VkSurfaceKHR _Surface, VulkanDevice &_Device, VkRenderPass _RenderPass);
 
     private:
         VkSwapchainKHR _SwapChain = VK_NULL_HANDLE;
@@ -36,6 +46,7 @@ namespace Space
 
         VkFormat _Format;
         VkExtent2D _Extent;
+        UUID _ID;
     };
 
     RenderChainSupportDetails _GetSwapChainSupportDetails(VkSurfaceKHR _Surface, VkPhysicalDevice device);

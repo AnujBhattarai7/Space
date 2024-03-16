@@ -7,11 +7,44 @@
 
 #include "Timer.h"
 #include "VulkanApi.h"
+#include "VertexBuffers.h"
 
 #include <GLFW/glfw3.h>
 
 namespace Space
 {
+    static std::vector<PhysicalDevice> _PhysicalDevices;
+    static int _CurrentFrameIndex = 0;
+    static int _InFlightFrames = 2;
+
+    static VulkanDevice _Device;
+
+    static VkVertexInputBindingDescription GetDescription()
+    {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        return bindingDescription;
+    }
+
+    static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions()
+    {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, Vertex::_Pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, Vertex::_Color);
+
+        return attributeDescriptions;
+    }
+
     bool checkDeviceExtensionSupport(VkPhysicalDevice device)
     {
         uint32_t extensionCount;
@@ -26,6 +59,10 @@ namespace Space
         {
             requiredExtensions.erase(extension.extensionName);
         }
+
+        if (!requiredExtensions.empty())
+            for (auto i : requiredExtensions)
+                SP_CORE_PRINT("Device Does Not Support: " << i)
 
         return requiredExtensions.empty();
     }
@@ -46,6 +83,11 @@ namespace Space
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
+    const VulkanDevice &GetActiveDevice()
+    {
+        return _Device;
+    }
+
     void _RecordCommandBuffer(const VulkanApiRenderData &_RenderData)
     {
         VkCommandBufferBeginInfo beginInfo{};
@@ -53,12 +95,10 @@ namespace Space
         beginInfo.flags = 0;                  // Optional
         beginInfo.pInheritanceInfo = nullptr; // Optional
 
-        if (vkBeginCommandBuffer(_RenderData._CommandBuffers, &beginInfo) != VK_SUCCESS)
+        if (vkBeginCommandBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex], &beginInfo) != VK_SUCCESS)
             SP_CORE_ERROR("failed to begin recording command buffer!");
 
-        vkCmdBeginRenderPass(_RenderData._CommandBuffers, &_RenderData._RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(_RenderData._CommandBuffers, VK_PIPELINE_BIND_POINT_GRAPHICS, *_RenderData._pGraphicsPipeline);
+        vkCmdBeginRenderPass(_RenderData._CommandBuffers[_CurrentFrameIndex], &_RenderData._RenderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -67,19 +107,27 @@ namespace Space
         viewport.height = static_cast<float>(_RenderData._ViewPortExtent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(_RenderData._CommandBuffers, 0, 1, &viewport);
+        vkCmdSetViewport(_RenderData._CommandBuffers[_CurrentFrameIndex], 0, 1, &viewport);
 
         VkRect2D scissor{};
 
         scissor.offset = {0, 0};
         scissor.extent = _RenderData._ViewPortExtent;
-        vkCmdSetScissor(_RenderData._CommandBuffers, 0, 1, &scissor);
+        vkCmdSetScissor(_RenderData._CommandBuffers[_CurrentFrameIndex], 0, 1, &scissor);
 
-        vkCmdDraw(_RenderData._CommandBuffers, 3, 1, 0, 0);
+        vkCmdBindPipeline(_RenderData._CommandBuffers[_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, *_RenderData._pGraphicsPipeline);
 
-        vkCmdEndRenderPass(_RenderData._CommandBuffers);
+        VkBuffer VBOs[] = {_RenderData._pCurrentVBuffer->GetHandle()};
+        VkDeviceSize Offsets[] = {0};
 
-        if (vkEndCommandBuffer(_RenderData._CommandBuffers) != VK_SUCCESS)
+        vkCmdBindVertexBuffers(_RenderData._CommandBuffers[_CurrentFrameIndex], 0, 1, VBOs, Offsets);
+
+        vkCmdDraw(_RenderData._CommandBuffers[_CurrentFrameIndex],
+                  static_cast<uint32_t>(_RenderData._pCurrentVBuffer->GetSize()), 1, 0, 0);
+
+        vkCmdEndRenderPass(_RenderData._CommandBuffers[_CurrentFrameIndex]);
+
+        if (vkEndCommandBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex]) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to record command buffer!");
     }
 
@@ -93,6 +141,7 @@ namespace Space
 
         if (enableValidationLayers)
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
         return extensions;
     }
@@ -214,11 +263,11 @@ namespace Space
         _Device.Init(*_Data._ActivePhysicalDevice);
 
         _Data._SwapChain.Init(_Data._Surface, _Device);
-
-        SetupRenderPass();
+        _Data._RenderPass.Init(_Device, _Data._SwapChain);
+        _RenderData._pRenderPass = &_Data._RenderPass;
+        _Data._SwapChain._InitFrameBuffers(_Device, _Data._RenderPass);
 
         SetupGraphicPipeline();
-        SetupFrameBuffers();
 
         SetupCommandPool();
         SetupCommandBuffers();
@@ -230,23 +279,23 @@ namespace Space
 
     bool VulkanApi::ShutDown()
     {
-        vkDeviceWaitIdle(_Device);
+        _RenderData._pCurrentVBuffer = nullptr;
 
         SP_PROFILE_SCOPE("Vulkan: ShutDown")
 
-        vkDestroySemaphore(_Device, _RenderData._Render, nullptr);
-        vkDestroySemaphore(_Device, _RenderData._ImageAvialable, nullptr);
-        vkDestroyFence(_Device, _RenderData._InFlight, nullptr);
+        for (auto &i : _RenderData._Render)
+            vkDestroySemaphore(_Device, i, nullptr);
+        for (auto &i : _RenderData._ImageAvialable)
+            vkDestroySemaphore(_Device, i, nullptr);
+        for (auto &i : _RenderData._InFlight)
+            vkDestroyFence(_Device, i, nullptr);
 
         vkDestroyCommandPool(_Device, _RenderData._CommandPool, nullptr);
 
-        for (auto framebuffer : _SwapChainFramebuffers)
-            vkDestroyFramebuffer(_Device, framebuffer, nullptr);
-
         vkDestroyPipeline(_Device, _Data._GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(_Device, _Data._PipelineLayout, nullptr);
-        vkDestroyRenderPass(_Device, _Data._RenderPass, nullptr);
 
+        _Data._RenderPass.Destroy(_Device);
         _Data._SwapChain.Destroy(_Device);
         _Device.Destroy();
 
@@ -260,6 +309,9 @@ namespace Space
         _Data._ActivePhysicalDevice = nullptr;
         _Data._ActivePhysicalDeviceIndex = -1;
 
+        _RenderData._pRenderPass = nullptr;
+        _RenderData._pGraphicsPipeline = nullptr;
+
         return _Data._VulkanInstance == VK_NULL_HANDLE;
     }
 
@@ -269,28 +321,30 @@ namespace Space
 
     void VulkanApi::SetupRender()
     {
+        _CurrentFrameIndex = (_CurrentFrameIndex + 1) % _InFlightFrames;
+
         _RenderData._RenderPassBeginInfo = {};
         _RenderData._RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     }
 
-    void VulkanApi::Render()
+    void VulkanApi::Render(const VertexBuffer *_VB)
     {
         // Wait for PRevious frame to be finished
-        vkWaitForFences(_Device, 1, &_RenderData._InFlight, VK_TRUE, UINT64_MAX);
-        vkResetFences(_Device, 1, &_RenderData._InFlight);
+        vkWaitForFences(_Device, 1, &_RenderData._InFlight[_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
 
         uint32_t _ImageIndex = 0;
-        vkAcquireNextImageKHR(_Device, _Data._SwapChain, UINT64_MAX, _RenderData._ImageAvialable, VK_NULL_HANDLE, &_ImageIndex);
+        VkResult _Result = vkAcquireNextImageKHR(_Device, _Data._SwapChain, UINT64_MAX, _RenderData._ImageAvialable[_CurrentFrameIndex], VK_NULL_HANDLE, &_ImageIndex);
+
+        if (_Result == VK_ERROR_OUT_OF_DATE_KHR)
+            _Data._SwapChain.Recreate(_Data._Surface, _Device, _RenderData._pRenderPass->GetHandle());
+        else if (_Result != VK_SUCCESS && _Result != VK_SUBOPTIMAL_KHR)
+            SP_CORE_ERROR("Vulkan: Failed to Acquire Swap Chain Image!!")
+
+        vkResetFences(_Device, 1, &_RenderData._InFlight[_CurrentFrameIndex]);
 
         _RenderData._CuurentImageIndex = _ImageIndex;
-        _RenderData._RenderPassBeginInfo.framebuffer = _SwapChainFramebuffers[_ImageIndex];
-        _RenderData._RenderPassBeginInfo.renderPass = *_RenderData._pRenderPass;
-
-        _RenderData._ViewPortExtent.width = _RenderData._ViewPortSize.x;
-        _RenderData._ViewPortExtent.height = _RenderData._ViewPortSize.y;
-
-        _RenderData._RenderPassBeginInfo.renderArea.extent = _RenderData._ViewPortExtent;
-        _RenderData._RenderPassBeginInfo.renderArea.offset = {0, 0};
+        _RenderData._RenderPassBeginInfo.framebuffer = _Data._SwapChain.GetFrameBuffers()[_ImageIndex];
+        _RenderData._RenderPassBeginInfo.renderPass = _RenderData._pRenderPass->GetHandle();
 
         VkClearValue clearColor;
         clearColor.color.float32[0] = _RenderData._ClearColor.x;
@@ -301,28 +355,35 @@ namespace Space
         _RenderData._RenderPassBeginInfo.clearValueCount = 1;
         _RenderData._RenderPassBeginInfo.pClearValues = &clearColor;
 
-        vkResetCommandBuffer(_RenderData._CommandBuffers, 0);
+        _RenderData._ViewPortExtent.width = _RenderData._ViewPortSize.x;
+        _RenderData._ViewPortExtent.height = _RenderData._ViewPortSize.y;
+
+        _RenderData._RenderPassBeginInfo.renderArea.extent = _RenderData._ViewPortExtent;
+        _RenderData._RenderPassBeginInfo.renderArea.offset = {0, 0};
+
+        vkResetCommandBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex], 0);
+        _RenderData._pCurrentVBuffer = _VB;
 
         _RecordCommandBuffer(_RenderData);
 
-        VkSemaphore waitSemaphores[] = {_RenderData._ImageAvialable};
+        VkSemaphore waitSemaphores[] = {_RenderData._ImageAvialable[_CurrentFrameIndex]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 
         VkSubmitInfo _SubmitInfo{};
         _SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
         _SubmitInfo.commandBufferCount = 1;
-        _SubmitInfo.pCommandBuffers = &_RenderData._CommandBuffers;
+        _SubmitInfo.pCommandBuffers = &_RenderData._CommandBuffers[_CurrentFrameIndex];
 
         _SubmitInfo.pWaitDstStageMask = waitStages;
         _SubmitInfo.pWaitSemaphores = waitSemaphores;
         _SubmitInfo.waitSemaphoreCount = 1;
 
-        VkSemaphore signalSemaphores[] = {_RenderData._Render};
+        VkSemaphore signalSemaphores[] = {_RenderData._Render[_CurrentFrameIndex]};
         _SubmitInfo.signalSemaphoreCount = 1;
         _SubmitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(_Device.AccessQueues(GRAPHICS), 1, &_SubmitInfo, _RenderData._InFlight) != VK_SUCCESS)
+        if (vkQueueSubmit(_Device.AccessQueues(GRAPHICS), 1, &_SubmitInfo, _RenderData._InFlight[_CurrentFrameIndex]) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Failed to submit draw command buffer!");
 
         VkPresentInfoKHR _PresentInfo{};
@@ -338,7 +399,13 @@ namespace Space
         _PresentInfo.pImageIndices = &_ImageIndex;
         _PresentInfo.pResults = nullptr; // Optional
 
-        vkQueuePresentKHR(_Device.AccessQueues(RENDER), &_PresentInfo);
+        _Result = vkQueuePresentKHR(_Device.AccessQueues(RENDER), &_PresentInfo);
+        if (_Result == VK_ERROR_OUT_OF_DATE_KHR || _Result == VK_SUBOPTIMAL_KHR || _RenderData._FrameBufferRecreate)
+            _Data._SwapChain.Recreate(_Data._Surface, _Device, _RenderData._pRenderPass->GetHandle());
+        else if (_Result != VK_SUCCESS)
+            SP_CORE_ERROR("Vulkan: Failed to Acquire Swap Chain Image!!")
+
+        _RenderData._FrameBufferRecreate = false;
     }
 
     void VulkanApi::SetViewPort(const Vec2 &Size)
@@ -346,28 +413,25 @@ namespace Space
         _RenderData._ViewPortSize = Size;
     }
 
-    void VulkanApi::SetupFrameBuffers()
+    void VulkanApi::SetClearColor(const Vec4 &ClearColor)
     {
-        _SwapChainFramebuffers.resize(_Data._SwapChain.GetImageCount());
+        _RenderData._ClearColor = ClearColor;
+    }
 
-        for (size_t i = 0; i < _Data._SwapChain.GetImageCount(); i++)
-        {
-            VkImageView attachments[] = {
-                _Data._SwapChain.GetImageViews()[i]};
+    void VulkanApi::SetFramesToRender(int n)
+    {
+        // _RenderData._FramesNumber = n;
 
-            VkFramebufferCreateInfo framebufferInfo{};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = _Data._RenderPass;
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = _Data._SwapChain.GetExtent().width;
-            framebufferInfo.height = _Data._SwapChain.GetExtent().height;
-            framebufferInfo.layers = 1;
+        // if (n > _RenderData._CommandBuffers.size())
+        // {
+        //     SetupCommandBuffers();
+        //     SetupSyncObjects();
+        // }
+    }
 
-            if (vkCreateFramebuffer(_Device, &framebufferInfo, nullptr, &_SwapChainFramebuffers[i]) != VK_SUCCESS)
-                SP_CORE_ERROR("Vulkan: Failed to create Framebuffer!");
-        }
-        SP_CORE_PRINT("Vulkan: FrameBuffers Setup!!")
+    void VulkanApi::Stop()
+    {
+        vkDeviceWaitIdle(_Device);
     }
 
     void VulkanApi::SetupInstance(VulkanApiVersion _V)
@@ -417,6 +481,13 @@ namespace Space
         createInfo.pApplicationInfo = &appInfo;
 
         auto extensions = getRequiredExtensions();
+
+        std::cout << "\n";
+        SP_CORE_PRINT("Vulkan Enabled Extensions: ")
+        for (auto &i : extensions)
+            SP_CORE_PRINT(i)
+        std::cout << "\n";
+
         createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
         createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -495,49 +566,15 @@ namespace Space
         _Data._ActivePhysicalDevice->SetQueueFamilyInidices(_Data._Surface);
     }
 
-    void VulkanApi::SetupRenderPass()
+    uint32_t VulkanApi::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
     {
-        VkAttachmentDescription colorAttachment{};
-        colorAttachment.format = _Data._SwapChain.GetFormat();
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(*_Data._ActivePhysicalDevice, &memProperties);
 
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        VkSubpassDescription subpass{};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-
-        VkRenderPassCreateInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-        renderPassInfo.dependencyCount = 1;
-        renderPassInfo.pDependencies = &dependency;
-
-        if (vkCreateRenderPass(_Device, &renderPassInfo, nullptr, &_Data._RenderPass) != VK_SUCCESS)
-            SP_CORE_ERROR("Vulkan: Failed to create render pass!\n");
-        SP_CORE_PRINT("Vulkan: Render Pass Created!!\n")
-
-        _RenderData._pRenderPass = &_Data._RenderPass;
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+                return i;
+        SP_CORE_ERROR("Vertex Buffer Suitable Memory Type not Found!!")
     }
 
     void VulkanApi::SetupGraphicPipeline()
@@ -566,10 +603,17 @@ namespace Space
         // Create Shader Stages
         VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
+        auto bindingDescription = GetDescription();
+        auto attributeDescriptions = GetAttributeDescriptions();
+
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -613,7 +657,9 @@ namespace Space
 
         std::vector<VkDynamicState> dynamicStates = {
             VK_DYNAMIC_STATE_VIEWPORT,
-            VK_DYNAMIC_STATE_SCISSOR};
+            VK_DYNAMIC_STATE_SCISSOR
+        };
+        
         VkPipelineDynamicStateCreateInfo dynamicState{};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -668,19 +714,39 @@ namespace Space
 
     void VulkanApi::SetupCommandBuffers()
     {
+        if (_RenderData._CommandBuffers.size() > _InFlightFrames)
+            vkFreeCommandBuffers(_Device, _RenderData._CommandPool, _RenderData._CommandBuffers.size(), _RenderData._CommandBuffers.data());
+
+        _RenderData._CommandBuffers.resize(_InFlightFrames);
+
         VkCommandBufferAllocateInfo _Info{};
         _Info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         _Info.commandPool = _RenderData._CommandPool;
-        _Info.commandBufferCount = 1;
+        _Info.commandBufferCount = _InFlightFrames;
         _Info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 
-        if (vkAllocateCommandBuffers(_Device, &_Info, &_RenderData._CommandBuffers) != VK_SUCCESS)
+        if (vkAllocateCommandBuffers(_Device, &_Info, _RenderData._CommandBuffers.data()) != VK_SUCCESS)
             SP_CORE_ERROR("Vulkan: Command Buffer Setup Failed!!")
         SP_CORE_PRINT("Vulkan: Command Buffer Created!!\n")
     }
 
     void VulkanApi::SetupSyncObjects()
     {
+        // If Less num of Objects availbe
+        if (_RenderData._ImageAvialable.size() > _InFlightFrames)
+        {
+            for (auto &i : _RenderData._Render)
+                vkDestroySemaphore(_Device, i, nullptr);
+            for (auto &i : _RenderData._ImageAvialable)
+                vkDestroySemaphore(_Device, i, nullptr);
+            for (auto &i : _RenderData._InFlight)
+                vkDestroyFence(_Device, i, nullptr);
+        }
+
+        _RenderData._ImageAvialable.resize(_InFlightFrames);
+        _RenderData._InFlight.resize(_InFlightFrames);
+        _RenderData._Render.resize(_InFlightFrames);
+
         VkSemaphoreCreateInfo _SemInfo{};
         _SemInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -688,9 +754,10 @@ namespace Space
         _FenInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         _FenInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        if (vkCreateSemaphore(_Device, &_SemInfo, nullptr, &_RenderData._ImageAvialable) != VK_SUCCESS ||
-            vkCreateSemaphore(_Device, &_SemInfo, nullptr, &_RenderData._Render) != VK_SUCCESS ||
-            vkCreateFence(_Device, &_FenInfo, nullptr, &_RenderData._InFlight) != VK_SUCCESS)
-            SP_CORE_ERROR("failed to create semaphores!");
+        for (int i = 0; i < _InFlightFrames; i++)
+            if (vkCreateSemaphore(_Device, &_SemInfo, nullptr, &_RenderData._ImageAvialable[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(_Device, &_SemInfo, nullptr, &_RenderData._Render[i]) != VK_SUCCESS ||
+                vkCreateFence(_Device, &_FenInfo, nullptr, &_RenderData._InFlight[i]) != VK_SUCCESS)
+                SP_CORE_ERROR("failed to create semaphores!");
     }
 }

@@ -40,4 +40,9 @@ namespace Space
 			return Vec4(int(x), int(y), int(z), int(w));
 		}
 	};
+
+	struct Vertex
+	{
+		Vec3 _Pos, _Color;
+	};
 }

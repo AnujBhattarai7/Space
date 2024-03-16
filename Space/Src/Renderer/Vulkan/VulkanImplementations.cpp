@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 #include "VulkanDevices.h"
 #include "VulkanRenderChain.h"
+#include "VulkanRenderPass.h"
 
 #include "Timer.h"
 
@@ -13,14 +14,77 @@
 
 namespace Space
 {
+    // ---- Render Pass ----
+    VulkanRenderPass::~VulkanRenderPass()
+    {
+        if (_RenderPass != VK_NULL_HANDLE)
+            SP_CORE_ERROR("Vulkan: Render Pass Destroy not called!!")
+    }
+
+    void VulkanRenderPass::Init(VulkanDevice &_Device, VulkanRenderChain &_SwapChains)
+    {
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = _SwapChains.GetFormat();
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDependency dependency{};
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+        dependency.dstSubpass = 0;
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependency.srcAccessMask = 0;
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = 1;
+        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+        renderPassInfo.dependencyCount = 1;
+        renderPassInfo.pDependencies = &dependency;
+
+        if (vkCreateRenderPass(_Device, &renderPassInfo, nullptr, &_RenderPass) != VK_SUCCESS)
+            SP_CORE_ERROR("Vulkan: Failed to create render pass!\n");
+        SP_CORE_PRINT("Vulkan: Render Pass Created!!\n")
+    }
+
+    void VulkanRenderPass::Destroy(VulkanDevice &_Device)
+    {
+        vkDestroyRenderPass(_Device, _RenderPass, nullptr);
+        _RenderPass = VK_NULL_HANDLE;
+    }
+
     // ---- Render Chain ----
 
     static std::vector<VkImageView> _SwapChainImageViews;
+    static std::vector<VkFramebuffer> _SwapChainFramebuffers;
+
+    VulkanRenderChain::~VulkanRenderChain()
+    {
+        if (_SwapChain != VK_NULL_HANDLE)
+            SP_CORE_ERROR("Vulkan: Swap Chain Destroy not called!!")
+    }
 
     void VulkanRenderChain::Init(VkSurfaceKHR _Surface, VulkanDevice &_Device)
     {
         auto Details = _GetSwapChainSupportDetails(_Surface, _Device.GetPhysicalDevice());
-
+     
         auto Extent = _ChooseSwapExtent(Details.capabilities);
         auto Format = _ChooseSwapSurfaceFormat(Details.formats);
         auto PresentMode = _ChooseSwapPresentMode(Details.presentModes);
@@ -74,6 +138,9 @@ namespace Space
 
     void VulkanRenderChain::Destroy(VulkanDevice &_Device)
     {
+        for (auto framebuffer : _SwapChainFramebuffers)
+            vkDestroyFramebuffer(_Device, framebuffer, nullptr);
+
         for (auto imageView : _SwapChainImageViews)
             vkDestroyImageView(_Device, imageView, nullptr);
 
@@ -110,10 +177,47 @@ namespace Space
         SP_CORE_PRINT("Vulkan: Swap Chain Image Views Created!!\n")
     }
 
+    void VulkanRenderChain::_InitFrameBuffers(VulkanDevice &_Device, VkRenderPass _RenderPass)
+    {
+        _SwapChainFramebuffers.resize(_ImageCount);
+
+        for (size_t i = 0; i < _ImageCount; i++)
+        {
+            VkImageView attachments[] = {
+                _SwapChainImageViews[i]};
+
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = _RenderPass;
+            framebufferInfo.attachmentCount = 1;
+            framebufferInfo.pAttachments = attachments;
+            framebufferInfo.width = _Extent.width;
+            framebufferInfo.height = _Extent.height;
+            framebufferInfo.layers = 1;
+
+            if (vkCreateFramebuffer(_Device, &framebufferInfo, nullptr, &_SwapChainFramebuffers[i]) != VK_SUCCESS)
+                SP_CORE_ERROR("Vulkan: Failed to create Framebuffer!");
+        }
+        SP_CORE_PRINT("Vulkan: FrameBuffers Setup!!")
+    }
+
     const std::vector<VkImageView> &VulkanRenderChain::GetImageViews() const
     {
-        // TODO: insert return statement here
         return _SwapChainImageViews;
+    }
+
+    const std::vector<VkFramebuffer> &VulkanRenderChain::GetFrameBuffers() const
+    {
+        return _SwapChainFramebuffers;
+    }
+
+    void VulkanRenderChain::Recreate(VkSurfaceKHR _Surface, VulkanDevice &_Device, VkRenderPass _RenderPass)
+    {
+        vkDeviceWaitIdle(_Device);
+        Destroy(_Device);
+
+        Init(_Surface, _Device);
+        _InitFrameBuffers(_Device, _RenderPass);
     }
 
     // Physical Devices

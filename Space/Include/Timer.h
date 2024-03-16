@@ -29,18 +29,22 @@ namespace Space
 
         void Stop()
         {
+            float _Duration = 0.0f;
+            Stop(_Duration);
+            SP_CORE_PRINT("PROFILE: " << _Name << " : " << _Duration << " ms")
+        }
+
+        void Stop(float& _Duration)
+        {
             auto _End = std::chrono::high_resolution_clock::now();
 
             // Casting the time into MilliSeconds
             long long Start = std::chrono::time_point_cast<std::chrono::milliseconds>(_Start).time_since_epoch().count();
             long long End = std::chrono::time_point_cast<std::chrono::milliseconds>(_End).time_since_epoch().count();
 
-            float Duration = (End - Start) * 0.001f;
-            _Stop = false;
-
-            SP_CORE_PRINT("PROFILE: " << _Name << " : " << Duration << " ms")
+            _Duration = (End - Start) * 0.001f;
+            _Stop = true;
         }
-
     private:
         const char *_Name;
         std::chrono::time_point<std::chrono::_V2::system_clock> _Start;

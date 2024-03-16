@@ -4,6 +4,7 @@
 
 #include "Timer.h"
 #include "UUID.h"
+#include "Maths.h"
 
 // ---- Input ----
 #include "Input.h"
