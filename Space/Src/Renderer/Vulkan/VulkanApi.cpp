@@ -7,7 +7,7 @@
 
 #include "Timer.h"
 #include "VulkanApi.h"
-#include "VertexBuffers.h"
+#include "Buffers.h"
 
 #include <GLFW/glfw3.h>
 
@@ -121,9 +121,11 @@ namespace Space
         VkDeviceSize Offsets[] = {0};
 
         vkCmdBindVertexBuffers(_RenderData._CommandBuffers[_CurrentFrameIndex], 0, 1, VBOs, Offsets);
+        vkCmdBindIndexBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex], _RenderData._pCurrentIBuffer->GetHandle(),
+                             0, VK_INDEX_TYPE_UINT16);
 
-        vkCmdDraw(_RenderData._CommandBuffers[_CurrentFrameIndex],
-                  static_cast<uint32_t>(_RenderData._pCurrentVBuffer->GetSize()), 1, 0, 0);
+        vkCmdDrawIndexed(_RenderData._CommandBuffers[_CurrentFrameIndex],
+                         static_cast<uint32_t>(_RenderData._pCurrentIBuffer->GetSize()), 1, 0, 0, 0);
 
         vkCmdEndRenderPass(_RenderData._CommandBuffers[_CurrentFrameIndex]);
 
@@ -327,7 +329,7 @@ namespace Space
         _RenderData._RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     }
 
-    void VulkanApi::Render(const VertexBuffer *_VB)
+    void VulkanApi::Render(const VertexBuffer *_VB, const IndexBuffer *_IB)
     {
         // Wait for PRevious frame to be finished
         vkWaitForFences(_Device, 1, &_RenderData._InFlight[_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
@@ -362,7 +364,9 @@ namespace Space
         _RenderData._RenderPassBeginInfo.renderArea.offset = {0, 0};
 
         vkResetCommandBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex], 0);
+
         _RenderData._pCurrentVBuffer = _VB;
+        _RenderData._pCurrentIBuffer = _IB;
 
         _RecordCommandBuffer(_RenderData);
 
@@ -657,9 +661,8 @@ namespace Space
 
         std::vector<VkDynamicState> dynamicStates = {
             VK_DYNAMIC_STATE_VIEWPORT,
-            VK_DYNAMIC_STATE_SCISSOR
-        };
-        
+            VK_DYNAMIC_STATE_SCISSOR};
+
         VkPipelineDynamicStateCreateInfo dynamicState{};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());

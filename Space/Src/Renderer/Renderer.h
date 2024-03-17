@@ -3,7 +3,7 @@
 #include "Maths.h"
 #include "Shaders.h"
 #include "VulkanHeader.h"
-#include "VertexBuffers.h"
+#include "Buffers.h"
 
 namespace Space
 {
@@ -14,6 +14,7 @@ namespace Space
     {
         // Store the Last Submitted Vertex Buffer
         const VertexBuffer *_VB = nullptr;
+        const IndexBuffer *_IB = nullptr;
     };
 
     class Renderer
@@ -38,6 +39,7 @@ namespace Space
         static void OnWindowResized();
 
         static void Submit(const VertexBuffer &VB);
+        static void Submit(const IndexBuffer &IB);
 
         static void Stop();
     private:

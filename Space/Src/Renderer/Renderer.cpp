@@ -29,7 +29,7 @@ namespace Space
 
     void Renderer::Render()
     {
-        _Renderer->_VulkanApi->Render(_Renderer->_RenderData._VB);
+        _Renderer->_VulkanApi->Render(_Renderer->_RenderData._VB, _Renderer->_RenderData._IB);
     }
 
     void Renderer::SetViewPort(const Vec2 &Size)
@@ -57,8 +57,11 @@ namespace Space
     void Renderer::Submit(const VertexBuffer &VB)
     {
         _Renderer->_RenderData._VB = &VB;
+    }
 
-
+    void Renderer::Submit(const IndexBuffer &IB)
+    {
+        _Renderer->_RenderData._IB = &IB;
     }
 
     void Renderer::Stop()

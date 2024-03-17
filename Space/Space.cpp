@@ -33,15 +33,17 @@ namespace Space
             Renderer::Init(VulkanApiVersion::VULKAN_1_0);
 
             const std::vector<Vertex> vertices = {
-                {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}},
+                {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
                 {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
                 {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-                {{-0.5f, -0.5f, 0.0f}, {0.5f, 0.5f, 0.0f}},
-                {{-0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-                {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-            };
+                {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}}};
 
-            _VB.Init((Vertex *)vertices.data(), vertices.size());
+            const std::vector<uint16_t> indices = {
+                0, 1, 2, 2, 3, 0};
+
+            _VB.Init(vertices.size());
+            _VB.Stream((Vertex *)vertices.data(), vertices.size());
+            _IB.Init((uint16_t*)indices.data(), 6);
         }
 
         void Update()
@@ -65,8 +67,9 @@ namespace Space
                     Renderer::SetupRender();
                     Renderer::SetClearColor({0.5f, 1.0f, 1.0f, 1.0f});
                     Renderer::SetViewPort(Size);
-                    
+
                     Renderer::Submit(_VB);
+                    Renderer::Submit(_IB);
 
                     if (Input::IsKeyPressed(SP_KEY_R))
                         Size.x -= 1.0f;
@@ -90,6 +93,7 @@ namespace Space
             SP_CORE_PRINT("SHUTDOWN: \n")
 
             _VB.Destroy();
+            _IB.Destroy();
             // CleanUp();
             Renderer::ShutDown();
             WindowStack::ShutDown();
@@ -118,6 +122,7 @@ namespace Space
         int _FPS = 0;
 
         VertexBuffer _VB;
+        IndexBuffer _IB;
     };
 }
 
