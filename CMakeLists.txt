@@ -56,7 +56,7 @@ add_subdirectory(Space/Libs)
 set(SPACE_VULKAN_SRC_DIR "Space/Src/Renderer/Vulkan")
 
 # Add source to this project's executable.
-add_executable (${TARGET_NAME} Space/Space.cpp ${SPACE_VULKAN_SRC_DIR}/Buffers.cpp ${SPACE_VULKAN_SRC_DIR}/VulkanImplementations.cpp ${SPACE_VULKAN_SRC_DIR}/VulkanApi.cpp Space/Include/UUID.cpp Space/Src/Window/WindowsWindow.cpp Space/Src/Window/Window.cpp Space/Src/Window/WindowStack.cpp Space/Src/Input/Input.cpp Space/Src/Renderer/Renderer.cpp)
+add_executable (${TARGET_NAME} Space/Space.cpp ${SPACE_VULKAN_SRC_DIR}/Shaders.cpp ${SPACE_VULKAN_SRC_DIR}/Buffers.cpp ${SPACE_VULKAN_SRC_DIR}/VulkanImplementations.cpp ${SPACE_VULKAN_SRC_DIR}/VulkanApi.cpp Space/Include/UUID.cpp Space/Src/Window/WindowsWindow.cpp Space/Src/Window/Window.cpp Space/Src/Window/WindowStack.cpp Space/Src/Input/Input.cpp Space/Src/Renderer/Renderer.cpp)
 target_precompile_headers(${TARGET_NAME} PUBLIC Space/Include/PCH.h)
 
 message("")

@@ -14,8 +14,7 @@ namespace Space
 
     VertexBuffer::~VertexBuffer()
     {
-        if (_VBuffer != VK_NULL_HANDLE)
-            Destroy();
+        Destroy();
     }
 
     uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
@@ -65,6 +64,9 @@ namespace Space
 
     void VertexBuffer::Init(int Size)
     {
+        if (_VBuffer != VK_NULL_HANDLE)
+            return;
+
         _Size = Size;
         _SizeInBytes = Size * sizeof(Vertex);
 
@@ -74,6 +76,9 @@ namespace Space
 
     void VertexBuffer::Destroy()
     {
+        if (_VBuffer == VK_NULL_HANDLE)
+            return;
+
         vkDestroyBuffer(GetActiveDevice(), _VBuffer, nullptr);
         vkFreeMemory(GetActiveDevice(), _Memory, nullptr);
 
@@ -100,8 +105,7 @@ namespace Space
 
     IndexBuffer::~IndexBuffer()
     {
-        if (_IBuffer != VK_NULL_HANDLE)
-            Destroy();
+        Destroy();
     }
 
     void IndexBuffer::Init(uint16_t *Indices, int Size)
@@ -112,6 +116,9 @@ namespace Space
 
     void IndexBuffer::Init(int Size)
     {
+        if (_IBuffer != VK_NULL_HANDLE)
+            return;
+
         _Size = Size;
         _SizeInBytes = Size * sizeof(uint16_t);
 
@@ -121,6 +128,9 @@ namespace Space
 
     void IndexBuffer::Destroy()
     {
+        if (_IBuffer == VK_NULL_HANDLE)
+            return;
+            
         vkDestroyBuffer(GetActiveDevice(), _IBuffer, nullptr);
         vkFreeMemory(GetActiveDevice(), _Memory, nullptr);
 

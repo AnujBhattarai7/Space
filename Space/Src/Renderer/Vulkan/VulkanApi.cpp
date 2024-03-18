@@ -7,7 +7,7 @@
 
 #include "Timer.h"
 #include "VulkanApi.h"
-#include "Buffers.h"
+#include "VertexArray.h"
 
 #include <GLFW/glfw3.h>
 
@@ -88,7 +88,7 @@ namespace Space
         return _Device;
     }
 
-    void _RecordCommandBuffer(const VulkanApiRenderData &_RenderData)
+    void _RecordCommandBuffer(const VulkanApiRenderData &_RenderData, const VertexArray *VAO)
     {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -117,15 +117,15 @@ namespace Space
 
         vkCmdBindPipeline(_RenderData._CommandBuffers[_CurrentFrameIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, *_RenderData._pGraphicsPipeline);
 
-        VkBuffer VBOs[] = {_RenderData._pCurrentVBuffer->GetHandle()};
+        VkBuffer VBOs[] = {VAO->GetVB().GetHandle()};
         VkDeviceSize Offsets[] = {0};
 
         vkCmdBindVertexBuffers(_RenderData._CommandBuffers[_CurrentFrameIndex], 0, 1, VBOs, Offsets);
-        vkCmdBindIndexBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex], _RenderData._pCurrentIBuffer->GetHandle(),
-                             0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex],
+                             VAO->GetIB().GetHandle(), 0, VK_INDEX_TYPE_UINT16);
 
         vkCmdDrawIndexed(_RenderData._CommandBuffers[_CurrentFrameIndex],
-                         static_cast<uint32_t>(_RenderData._pCurrentIBuffer->GetSize()), 1, 0, 0, 0);
+                         static_cast<uint32_t>(VAO->GetIB().GetSize()), 1, 0, 0, 0);
 
         vkCmdEndRenderPass(_RenderData._CommandBuffers[_CurrentFrameIndex]);
 
@@ -281,8 +281,6 @@ namespace Space
 
     bool VulkanApi::ShutDown()
     {
-        _RenderData._pCurrentVBuffer = nullptr;
-
         SP_PROFILE_SCOPE("Vulkan: ShutDown")
 
         for (auto &i : _RenderData._Render)
@@ -329,7 +327,7 @@ namespace Space
         _RenderData._RenderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     }
 
-    void VulkanApi::Render(const VertexBuffer *_VB, const IndexBuffer *_IB)
+    void VulkanApi::Render(const VertexArray *VAO)
     {
         // Wait for PRevious frame to be finished
         vkWaitForFences(_Device, 1, &_RenderData._InFlight[_CurrentFrameIndex], VK_TRUE, UINT64_MAX);
@@ -365,10 +363,7 @@ namespace Space
 
         vkResetCommandBuffer(_RenderData._CommandBuffers[_CurrentFrameIndex], 0);
 
-        _RenderData._pCurrentVBuffer = _VB;
-        _RenderData._pCurrentIBuffer = _IB;
-
-        _RecordCommandBuffer(_RenderData);
+        _RecordCommandBuffer(_RenderData, VAO);
 
         VkSemaphore waitSemaphores[] = {_RenderData._ImageAvialable[_CurrentFrameIndex]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};

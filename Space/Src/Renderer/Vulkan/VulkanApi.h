@@ -10,6 +10,7 @@ namespace Space
 {
     class VertexBuffer;
     class IndexBuffer;
+    class VertexArray;
 
     struct VulkanApiData
     {
@@ -52,8 +53,6 @@ namespace Space
         int _FramesNumber = 2;
 
         bool _FrameBufferRecreate = false;
-        const VertexBuffer* _pCurrentVBuffer;
-        const IndexBuffer* _pCurrentIBuffer;
         // VkDeviceMemory _VBO_Data;
     };
 
@@ -73,7 +72,7 @@ namespace Space
         void Update();
 
         void SetupRender();
-        void Render(const VertexBuffer* _VB, const IndexBuffer* _IB);
+        void Render(const VertexArray* VAO);
         void OnWindowResized() { _RenderData._FrameBufferRecreate = true; }
 
         void SetViewPort(const Vec2 &Size);

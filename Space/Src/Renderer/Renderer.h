@@ -3,7 +3,7 @@
 #include "Maths.h"
 #include "Shaders.h"
 #include "VulkanHeader.h"
-#include "Buffers.h"
+#include "VertexArray.h"
 
 namespace Space
 {
@@ -29,7 +29,7 @@ namespace Space
 
         static void SetupRender();
 
-        static void Render();
+        static void Render(const VertexArray* VAO);
 
         static RenderApiType GetApiType() { return RenderApiType::VULKAN_1; }
 
@@ -37,9 +37,6 @@ namespace Space
         static void SetClearColor(const Vec4 &Color);
         static void SetFramesToRender(int n);
         static void OnWindowResized();
-
-        static void Submit(const VertexBuffer &VB);
-        static void Submit(const IndexBuffer &IB);
 
         static void Stop();
     private:

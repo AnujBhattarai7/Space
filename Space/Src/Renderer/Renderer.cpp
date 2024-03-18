@@ -27,9 +27,9 @@ namespace Space
         _Renderer->_VulkanApi->SetClearColor({0.2f, 0.2f, 0.2f, 1.0f});
     }
 
-    void Renderer::Render()
+    void Renderer::Render(const VertexArray* VAO)
     {
-        _Renderer->_VulkanApi->Render(_Renderer->_RenderData._VB, _Renderer->_RenderData._IB);
+        _Renderer->_VulkanApi->Render(VAO);
     }
 
     void Renderer::SetViewPort(const Vec2 &Size)
@@ -54,16 +54,6 @@ namespace Space
         _Renderer->_VulkanApi->OnWindowResized();
     }
 
-    void Renderer::Submit(const VertexBuffer &VB)
-    {
-        _Renderer->_RenderData._VB = &VB;
-    }
-
-    void Renderer::Submit(const IndexBuffer &IB)
-    {
-        _Renderer->_RenderData._IB = &IB;
-    }
-
     void Renderer::Stop()
     {
         _Renderer->_VulkanApi->Stop();
@@ -75,13 +65,3 @@ namespace Space
     }
 
 } // namespace Space
-
-// Create Funcs
-namespace Space
-{
-    Shader *Shader::Create(const char *VertexFilePath, const char *ShaderFilePath)
-    {
-        SP_CORE_ERROR("Shader: Given Api Not Supoorted")
-        return nullptr;
-    }
-}

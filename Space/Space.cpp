@@ -41,9 +41,8 @@ namespace Space
             const std::vector<uint16_t> indices = {
                 0, 1, 2, 2, 3, 0};
 
-            _VB.Init(vertices.size());
-            _VB.Stream((Vertex *)vertices.data(), vertices.size());
-            _IB.Init((uint16_t*)indices.data(), 6);
+            _VAO.AddVB((Vertex *)vertices.data(), vertices.size());
+            _VAO.AddIB((uint16_t*)indices.data(), 6);
         }
 
         void Update()
@@ -68,13 +67,10 @@ namespace Space
                     Renderer::SetClearColor({0.5f, 1.0f, 1.0f, 1.0f});
                     Renderer::SetViewPort(Size);
 
-                    Renderer::Submit(_VB);
-                    Renderer::Submit(_IB);
-
                     if (Input::IsKeyPressed(SP_KEY_R))
                         Size.x -= 1.0f;
 
-                    Renderer::Render();
+                    Renderer::Render(&_VAO);
 
                     // Every one Second Print the FPS
                     if (currentTime - previousTime >= 1.0f)
@@ -92,8 +88,7 @@ namespace Space
         {
             SP_CORE_PRINT("SHUTDOWN: \n")
 
-            _VB.Destroy();
-            _IB.Destroy();
+            _VAO.Destroy();
             // CleanUp();
             Renderer::ShutDown();
             WindowStack::ShutDown();
@@ -120,9 +115,7 @@ namespace Space
         bool _Run = true;
         bool _Render = true;
         int _FPS = 0;
-
-        VertexBuffer _VB;
-        IndexBuffer _IB;
+        VertexArray _VAO;
     };
 }
 
